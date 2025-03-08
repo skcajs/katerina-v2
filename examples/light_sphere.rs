@@ -2,7 +2,7 @@ use katerina::light;
 use katerina::tuple::Tuple;
 use katerina::canvas::Canvas;
 use katerina::ray::Ray;
-use katerina::sphere::Sphere;
+use katerina::shape::Shape;
 use katerina::intersections::Intersections;
 use katerina::material::Material;
 
@@ -15,7 +15,7 @@ fn main() {
     let half = wall_size / 2.0;
 
     let mut canvas = Canvas::new(canvas_pixels, canvas_pixels);
-    let mut shape = Sphere::new();
+    let mut shape = Shape::sphere();
 
     shape.set_material(Material::new().with_color(Tuple::color(1.0, 0.2, 1.0)));
 

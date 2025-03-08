@@ -1,7 +1,16 @@
-use crate::{color::Colors, intersection::{Intersection, Record}, intersections::Intersections, light::Light, material::Material, matrix::Matrix, ray::Ray, sphere::Sphere, transformation::Transformation, tuple::Tuple};
+use crate::{color::Colors, 
+    intersection::{Intersection, Record}, 
+    intersections::Intersections, 
+    light::Light, 
+    material::Material, 
+    matrix::Matrix, 
+    ray::Ray,
+    shape::Shape, 
+    transformation::Transformation, 
+    tuple::Tuple};
 
 pub struct World {
-    objects: Vec<Sphere>,
+    objects: Vec<Shape>,
     lights: Vec<Light>,
 }
 
@@ -13,16 +22,16 @@ impl World {
         }
     }
 
-    pub fn with_objects(mut self, objects: Vec<Sphere>) -> World {
+    pub fn with_objects(mut self, objects: Vec<Shape>) -> World {
         self.objects = objects;
         self
     }
 
-    pub fn add_objects(&mut self, objects: Vec<Sphere>) {
+    pub fn add_objects(&mut self, objects: Vec<Shape>) {
         self.objects.extend(objects);
     }
 
-    pub fn add_object(&mut self, object: Sphere) {
+    pub fn add_object(&mut self, object: Shape) {
         self.objects.push(object);
     }
 
@@ -41,12 +50,12 @@ impl World {
 
     pub fn default_world() -> World {
         let light = Light::new(Tuple::point(-10.0, 10.0, -10.0), Tuple::color(1.0, 1.0, 1.0));
-        let s1 = Sphere::new()
+        let s1 = Shape::sphere()
             .with_material(Material::new()
             .with_color(Tuple::color(0.8, 1.0, 0.6))
             .with_diffuse(0.7)
             .with_specular(0.2));
-        let s2 = Sphere::new()
+        let s2 = Shape::sphere()
             .with_transform(Matrix::scaling(0.5, 0.5, 0.5));
         World {
             objects: vec![s1, s2],
@@ -120,8 +129,8 @@ mod tests {
     #[test]
     fn the_default_world() {
         let light = Light::new(Tuple::point(-10.0, 10.0, -10.0), Tuple::color(1.0, 1.0, 1.0));
-        let s1 = Sphere::new().with_material(Material::new().with_color(Tuple::color(0.8, 1.0, 0.6)).with_diffuse(0.7).with_specular(0.2));
-        let s2 = Sphere::new().with_transform(Matrix::scaling(0.5, 0.5, 0.5));
+        let s1 = Shape::sphere().with_material(Material::new().with_color(Tuple::color(0.8, 1.0, 0.6)).with_diffuse(0.7).with_specular(0.2));
+        let s2 = Shape::sphere().with_transform(Matrix::scaling(0.5, 0.5, 0.5));
         let world = World::default_world();
         assert_eq!(world.lights[0], light);
         assert_eq!(world.objects[0], s1);
@@ -145,7 +154,7 @@ mod tests {
         let world = World::default_world();
         let r = Ray::new(Tuple::point(0.0, 0.0, -5.0), Tuple::vector(0.0, 0.0, 1.0));
         let shape = &world.objects[0];
-        let i = Intersection::new(4.0, shape);
+        let i = Intersection::new(4.0, shape.clone());
         let comps = i.prepare_computations(&r);
         let c = world.shade_hit(&comps);
         let delta = 0.00001;
@@ -160,7 +169,7 @@ mod tests {
         world.lights = vec![Light::new(Tuple::point(0.0, 0.25, 0.0), Tuple::color(1.0, 1.0, 1.0))];
         let r = Ray::new(Tuple::point(0.0, 0.0, 0.0), Tuple::vector(0.0, 0.0, 1.0));
         let shape = &world.objects[1];
-        let i = Intersection::new(0.5, shape);
+        let i = Intersection::new(0.5, shape.clone());
         let comps = i.prepare_computations(&r);
         let c = world.shade_hit(&comps);
         let delta = 0.00001;
@@ -231,11 +240,11 @@ mod tests {
         let world = World::new()
             .with_lights(vec![Light::new(Tuple::point(0.0, 0.0, -10.0), Tuple::color(1.0, 1.0, 1.0))])
             .with_objects(vec![
-                Sphere::new(),
-                Sphere::new().with_transform(Matrix::translation(0.0, 0.0, 10.0)),
+                Shape::sphere(),
+                Shape::sphere().with_transform(Matrix::translation(0.0, 0.0, 10.0)),
             ]);
         let r = Ray::new(Tuple::point(0.0, 0.0, 5.0), Tuple::vector(0.0, 0.0, 1.0));
-        let i = Intersection::new(4.0, &world.objects[1]);
+        let i = Intersection::new(4.0, world.objects[1].clone());
         let comps = i.prepare_computations(&r);
         let c = world.shade_hit(&comps);
         let delta = 0.00001;

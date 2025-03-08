@@ -1,1 +1,3 @@
-pub(crate) mod shape;
+pub mod test_shape;
+pub mod sphere;
+pub mod plane;

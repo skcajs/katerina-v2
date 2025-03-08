@@ -1,8 +1,8 @@
-use crate::{ray::Ray, sphere::Sphere, tuple::Tuple};
+use crate::{ray::Ray, shape::Shape, tuple::Tuple};
 
-pub struct Record<'a> {
+pub struct Record {
     pub t: f64,
-    pub object: &'a Sphere,
+    pub object: Shape,
     pub point: Tuple,
     pub eyev: Tuple,
     pub normalv: Tuple,
@@ -10,14 +10,14 @@ pub struct Record<'a> {
     pub over_point: Tuple,
 }
 
-#[derive(Clone, Copy, PartialEq, Debug)]
-pub struct Intersection<'a> {
+#[derive(Clone, PartialEq, Debug)]
+pub struct Intersection {
     pub t: f64,
-    pub object: &'a Sphere,
+    pub object: Shape,
 }
 
-impl<'a> Intersection<'a> {
-    pub fn new(t: f64, object: &'a Sphere) -> Intersection<'a> {
+impl Intersection {
+    pub fn new(t: f64, object: Shape) -> Intersection {
         Intersection { t, object }
     }
 
@@ -34,7 +34,7 @@ impl<'a> Intersection<'a> {
         let over_point = point + normalv * 0.0001;
         Record {
             t: self.t,
-            object: self.object,
+            object: self.object.clone(),
             point,
             eyev,
             normalv,

@@ -1,6 +1,6 @@
 use katerina::light::Light;
 use katerina::tuple::Tuple;
-use katerina::sphere::Sphere;
+use katerina::shape::Shape;
 use katerina::material::Material;
 use katerina::world::World;
 use katerina::camera::Camera;
@@ -9,28 +9,28 @@ use katerina::transformation::Transformation;
 
 fn main() {
 
-    let floor = Sphere::new()
+    let floor = Shape::sphere()
         .with_transform(Matrix::scaling(10.0, 0.01, 10.0))
         .with_material(Material::new()
             .with_color(Tuple::color(1.0, 0.9, 0.9))
             .with_specular(0.0)
         );
 
-    let left_wall = Sphere::new()
+    let left_wall = Shape::sphere()
         .with_transform(Matrix::translation(0.0, 0.0, 5.0)
             * Matrix::rotation_y(-std::f64::consts::FRAC_PI_4)
             * Matrix::rotation_x(std::f64::consts::FRAC_PI_2)
             * Matrix::scaling(10.0, 0.01, 10.0))
         .with_material(floor.get_material().clone());
 
-    let right_wall = Sphere::new()
+    let right_wall = Shape::sphere()
         .with_transform(Matrix::translation(0.0, 0.0, 5.0)
             * Matrix::rotation_y(std::f64::consts::FRAC_PI_4)
             * Matrix::rotation_x(std::f64::consts::FRAC_PI_2)
             * Matrix::scaling(10.0, 0.01, 10.0))
         .with_material(floor.get_material().clone());
 
-    let middle = Sphere::new()
+    let middle = Shape::sphere()
         .with_transform(Matrix::translation(-0.5, 1.0, 0.5))
         .with_material(Material::new()
             .with_color(Tuple::color(0.1, 1.0, 0.5))
@@ -38,7 +38,7 @@ fn main() {
             .with_specular(0.3)
         );
 
-    let right = Sphere::new()
+    let right = Shape::sphere()
         .with_transform(Matrix::translation(1.5, 0.5, -0.5)
             * Matrix::scaling(0.5, 0.5, 0.5))
         .with_material(Material::new()
@@ -47,7 +47,7 @@ fn main() {
             .with_specular(0.3)
         );
 
-    let left = Sphere::new()
+    let left = Shape::sphere()
         .with_transform(Matrix::translation(-1.5, 0.33, -0.75)
             * Matrix::scaling(0.33, 0.33, 0.33))
         .with_material(Material::new()
