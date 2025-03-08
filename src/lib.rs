@@ -12,3 +12,5 @@ pub mod world;
 pub mod camera;
 pub mod shapes;
 pub mod shape;
+pub mod patterns;
+pub mod pattern;

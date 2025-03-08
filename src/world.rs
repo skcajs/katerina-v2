@@ -77,6 +77,7 @@ impl World {
         let mut color = Colors::black();
         for light in &self.lights {
             color = color + record.object.get_material().lighting(
+                &record.object,
                 light,
                 record.over_point,
                 record.eyev,

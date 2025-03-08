@@ -62,7 +62,7 @@ fn main() {
         .with_objects(vec![floor, left_wall, right_wall, middle, right, left])
         .with_lights(vec![light]);
 
-    let camera = Camera::new(400, 200, std::f64::consts::PI / 3.0).with_transform(
+    let camera = Camera::new(800, 400, std::f64::consts::PI / 3.0).with_transform(
         Matrix::view_transform(
             Tuple::point(0.0, 1.5, -5.0),
             Tuple::point(0.0, 1.0, 0.0),
