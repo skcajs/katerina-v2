@@ -1,15 +1,14 @@
-use crate::{matrix::Matrix, tuple::{Color, Point}};
+use crate::tuple::{Color, Point};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Checkers {
     pub a: Color,
     pub b: Color,
-    pub transform: Matrix,
 }
 
 impl Checkers {
     pub fn new(a: Color, b: Color) -> Checkers {
-        Checkers { a, b, transform: Matrix::identity() }
+        Checkers { a, b }
     }
 
     pub fn checkers_at(&self, point: Point) -> Color {
@@ -18,26 +17,6 @@ impl Checkers {
         } else {
             self.b
         }
-    }
-
-    pub fn checkers_at_shape(&self, shape: &crate::shape::Shape, world_point: Point) -> Color {
-        let object_point = shape.get_transform().inverse() * world_point;
-        let pattern_point = self.get_transform().inverse() * object_point;
-        self.checkers_at(pattern_point)
-    }
-
-    pub fn get_transform(&self) -> &Matrix {
-        &self.transform
-    }
-
-    pub fn set_transform(&mut self, transform: Matrix) {
-        self.transform = transform;
-    }
-
-    pub fn with_transform(&self, transform: Matrix) -> Checkers {
-        let mut new_checkers = self.clone();
-        new_checkers.set_transform(transform);
-        new_checkers
     }
 }
 

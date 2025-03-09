@@ -1,7 +1,7 @@
 use katerina::light::Light;
+use katerina::object::Object;
 use katerina::pattern::Pattern;
 use katerina::tuple::Tuple;
-use katerina::shape::Shape;
 use katerina::material::Material;
 use katerina::world::World;
 use katerina::camera::Camera;
@@ -13,7 +13,7 @@ fn main() {
 
     let start = Instant::now();
 
-    let floor = Shape::plane()
+    let floor = Object::plane()
         .with_transform(Matrix::scaling(10.0, 0.01, 10.0))
         .with_material(Material::new()
             .with_color(Tuple::color(1.0, 0.9, 0.9))
@@ -30,21 +30,21 @@ fn main() {
             .with_reflectivity(0.1)
         );
 
-    let left_wall = Shape::plane()
+    let left_wall = Object::plane()
         .with_transform(Matrix::translation(0.0, 0.0, 5.0)
             * Matrix::rotation_y(-std::f64::consts::FRAC_PI_4)
             * Matrix::rotation_x(std::f64::consts::FRAC_PI_2)
             * Matrix::scaling(10.0, 0.01, 10.0))
         .with_material(Material::new());
 
-    let right_wall = Shape::plane()
+    let right_wall = Object::plane()
         .with_transform(Matrix::translation(0.0, 0.0, 5.0)
             * Matrix::rotation_y(std::f64::consts::FRAC_PI_4)
             * Matrix::rotation_x(std::f64::consts::FRAC_PI_2)
             * Matrix::scaling(10.0, 0.01, 10.0))
         .with_material(Material::new());
 
-    let middle = Shape::sphere()
+    let middle = Object::sphere()
         .with_transform(Matrix::translation(-0.5, 1.0, 0.5))
         .with_material(Material::new()
             .with_color(Tuple::color(0.6, 0.0, 0.1))
@@ -54,7 +54,7 @@ fn main() {
             .with_reflectivity(1.0)
         );
 
-    let right = Shape::sphere()
+    let right = Object::sphere()
         .with_transform(Matrix::translation(1.5, 0.5, -0.5)
             * Matrix::scaling(0.5, 0.5, 0.5))
         .with_material(Material::new()
@@ -64,7 +64,7 @@ fn main() {
             .with_transparency(0.3)
         );
 
-    let left = Shape::sphere()
+    let left = Object::sphere()
         .with_transform(Matrix::translation(-1.5, 0.33, -0.75)
             * Matrix::scaling(0.33, 0.33, 0.33))
         .with_material(Material::new()

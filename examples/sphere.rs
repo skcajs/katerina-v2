@@ -1,7 +1,7 @@
 use katerina::tuple::Tuple;
 use katerina::canvas::Canvas;
 use katerina::ray::Ray;
-use katerina::shape::Shape;
+use katerina::object::Object;
 use katerina::intersections::Intersections;
 
 fn main() {
@@ -14,7 +14,7 @@ fn main() {
 
     let mut canvas = Canvas::new(canvas_pixels, canvas_pixels);
     let color = Tuple::color(1.0, 0.0, 0.0);
-    let shape = Shape::sphere();
+    let shape = Object::sphere();
 
     for y in 0..canvas_pixels {
         let world_y = half - pixel_size * y as f64;

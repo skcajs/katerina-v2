@@ -2,7 +2,7 @@ use katerina::light;
 use katerina::tuple::Tuple;
 use katerina::canvas::Canvas;
 use katerina::ray::Ray;
-use katerina::shape::Shape;
+use katerina::object::Object;
 use katerina::intersections::Intersections;
 use katerina::material::Material;
 
@@ -15,9 +15,9 @@ fn main() {
     let half = wall_size / 2.0;
 
     let mut canvas = Canvas::new(canvas_pixels, canvas_pixels);
-    let mut shape = Shape::sphere();
+    let mut object = Object::sphere();
 
-    shape.set_material(Material::new().with_color(Tuple::color(1.0, 0.2, 1.0)));
+    object.set_material(Material::new().with_color(Tuple::color(1.0, 0.2, 1.0)));
 
     let light_position = Tuple::point(-10.0, 10.0, -10.0);
     let light_color = Tuple::color(1.0, 1.0, 1.0);
@@ -29,10 +29,10 @@ fn main() {
             let world_x = -half + pixel_size * x as f64;
             let position = Tuple::point(world_x, world_y, wall_z);
             let r = Ray::new(ray_origin, (position - ray_origin).normalize());
-            let xs = shape.intersect(&r);
+            let xs = object.intersect(&r);
             if let Some(hit) = xs.hit() {
                 let point = r.position(hit.t);
-                let normal = hit.object.normal_at(point);
+                let normal = hit.object.normal_at(&point);
                 let eye = -r.direction;
                 let color = hit.object.get_material().lighting(&hit.object, &light, point, eye, normal, false);
                 canvas.write_pixel(x, y, color);

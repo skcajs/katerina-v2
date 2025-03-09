@@ -1,10 +1,9 @@
 use crate::material::Material;
-use crate::shape::Shape;
-use crate::shapes::sphere::Sphere;
+use crate::object::Object;
 use crate::tuple::Color;
 
-pub fn glass_sphere() -> Shape {
-    Shape::Sphere(Sphere::new())
+pub fn glass_sphere() -> Object {
+    Object::sphere()
         .with_material(
             Material::new()
                 .with_color(Color::color(1.0, 1.0, 1.0))

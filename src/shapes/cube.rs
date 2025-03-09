@@ -1,4 +1,4 @@
-use crate::{intersection::Intersection, material::Material, matrix::Matrix, ray::Ray, shape::Shape, tuple::Tuple};
+use crate::{material::Material, matrix::Matrix, ray::Ray, tuple::Tuple};
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Cube {
@@ -12,7 +12,7 @@ impl Cube {
         Cube { side: 1.0, transform: Matrix::identity(), material: Material::new() }
     }
 
-    pub fn local_intersect(&self, ray: &Ray) -> Vec<Intersection> {
+    pub fn local_intersect(&self, ray: &Ray) -> Vec<f64> {
         let (xtmin, xtmax) = self.check_axis(ray.origin.0, ray.direction.0);
         let (ytmin, ytmax) = self.check_axis(ray.origin.1, ray.direction.1);
         let (ztmin, ztmax) = self.check_axis(ray.origin.2, ray.direction.2);
@@ -24,10 +24,7 @@ impl Cube {
             return vec![];
         }
 
-        vec![
-            Intersection::new(tmin, Shape::Cube(self.clone())),
-            Intersection::new(tmax, Shape::Cube(self.clone())),
-        ]
+        vec![tmin, tmax]
     }
 
     pub fn local_normal_at(&self, point: &Tuple) -> Tuple {
@@ -100,8 +97,8 @@ mod tests {
         let r = Ray::new(Tuple::point(5.0, 0.5, 0.0), Tuple::vector(-1.0, 0.0, 0.0));
         let xs = c.local_intersect(&r);
         assert_eq!(xs.len(), 2);
-        assert_eq!(xs[0].t, 4.0);
-        assert_eq!(xs[1].t, 6.0);
+        assert_eq!(xs[0], 4.0);
+        assert_eq!(xs[1], 6.0);
     }
 
     #[test]

@@ -1,8 +1,8 @@
-use crate::{ray::Ray, shape::Shape, tuple::Tuple};
+use crate::{object::Object, ray::Ray, tuple::Tuple};
 
 pub struct Record {
     pub t: f64,
-    pub object: Shape,
+    pub object: Object,
     pub point: Tuple,
     pub eyev: Tuple,
     pub normalv: Tuple,
@@ -16,20 +16,20 @@ pub struct Record {
 }
 
 #[derive(Clone, PartialEq, Debug)]
-pub struct Intersection {
+pub struct Intersection<'a> {
     pub t: f64,
-    pub object: Shape,
+    pub object: &'a Object,
 }
 
-impl Intersection {
-    pub fn new(t: f64, object: Shape) -> Intersection {
+impl<'a> Intersection<'a> {
+    pub fn new(t: f64, object: &'a Object) -> Intersection<'a> {
         Intersection { t, object }
     }
 
     pub fn prepare_computations(&self, ray: &Ray, xs: &Vec<Intersection>) -> Record {
         let mut n1 = 1.0;
         let mut n2 = 1.0;
-        let mut containers: Vec<Shape> = vec![];
+        let mut containers: Vec<Object> = vec![];
 
         for i in xs {
             if i == self {
@@ -41,7 +41,7 @@ impl Intersection {
             }
 
             if containers.contains(&i.object) {
-                containers.retain(|x| *x != i.object);
+                containers.retain(|x| x != i.object);
             } else {
                 containers.push(i.object.clone());
             }
@@ -56,7 +56,7 @@ impl Intersection {
             }
         }
 
-        let mut normalv = self.object.normal_at(ray.position(self.t));
+        let mut normalv = self.object.normal_at(&ray.position(self.t));
         let eyev = -ray.direction;
         let inside = if normalv.dot(eyev) < 0.0 {
             normalv = -normalv;

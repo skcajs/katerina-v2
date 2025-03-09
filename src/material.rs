@@ -1,6 +1,6 @@
 use crate::light::Light;
+use crate::object::Object;
 use crate::pattern::Pattern;
-use crate::shape::Shape;
 use crate::tuple::{Tuple, Color};
 use crate::color::Colors;
 
@@ -77,10 +77,10 @@ impl Material {
         self
     }
 
-    pub fn lighting(&self, object: &Shape, light: &Light, position: Tuple, eyev: Tuple, normalv: Tuple, in_shadow: bool) -> Color {
+    pub fn lighting(&self, object: &Object, light: &Light, position: Tuple, eyev: Tuple, normalv: Tuple, in_shadow: bool) -> Color {
 
         let color = if let Some(pattern) = &self.pattern {
-            pattern.pattern_at_shape(object, position)
+            pattern.pattern_at_shape(&object, position)
         } else {
             self.color
         };
@@ -138,7 +138,7 @@ mod tests {
         let eyev = Tuple::vector(0.0, 0.0, -1.0);
         let normalv = Tuple::vector(0.0, 0.0, -1.0);
         let light = Light::new(Tuple::point(0.0, 0.0, -10.0), Tuple::color(1.0, 1.0, 1.0));
-        let result = m.lighting(&Shape::test_shape(), &light, position, eyev, normalv, false);
+        let result = m.lighting(&Object::test_shape(), &light, position, eyev, normalv, false);
 
         assert_eq!(result, Tuple::color(1.9, 1.9, 1.9));
     }
@@ -150,7 +150,7 @@ mod tests {
         let eyev = Tuple::vector(0.0, 2_f64.sqrt() / 2.0, -2_f64.sqrt() / 2.0);
         let normalv = Tuple::vector(0.0, 0.0, -1.0);
         let light = Light::new(Tuple::point(0.0, 0.0, -10.0), Tuple::color(1.0, 1.0, 1.0));
-        let result = m.lighting(&Shape::test_shape(), &light, position, eyev, normalv, false);
+        let result = m.lighting(&Object::test_shape(), &light, position, eyev, normalv, false);
 
         assert_eq!(result, Tuple::color(1.0, 1.0, 1.0));
     }
@@ -162,7 +162,7 @@ mod tests {
         let eyev = Tuple::vector(0.0, 0.0, -1.0);
         let normalv = Tuple::vector(0.0, 0.0, -1.0);
         let light = Light::new(Tuple::point(0.0, 10.0, -10.0), Tuple::color(1.0, 1.0, 1.0));
-        let result = m.lighting(&Shape::test_shape(), &light, position, eyev, normalv, false);
+        let result = m.lighting(&Object::test_shape(), &light, position, eyev, normalv, false);
 
         let alpha = 1e-4;
         assert!((result.0 - 0.7364).abs() < alpha);
@@ -177,7 +177,7 @@ mod tests {
         let eyev = Tuple::vector(0.0, -2_f64.sqrt() / 2.0, -2_f64.sqrt() / 2.0);
         let normalv = Tuple::vector(0.0, 0.0, -1.0);
         let light = Light::new(Tuple::point(0.0, 10.0, -10.0), Tuple::color(1.0, 1.0, 1.0));
-        let result = m.lighting(&Shape::test_shape(), &light, position, eyev, normalv, false);
+        let result = m.lighting(&Object::test_shape(), &light, position, eyev, normalv, false);
 
         let alpha = 1e-4;
         assert!((result.0 - 1.6364).abs() < alpha);
@@ -192,7 +192,7 @@ mod tests {
         let eyev = Tuple::vector(0.0, 0.0, -1.0);
         let normalv = Tuple::vector(0.0, 0.0, -1.0);
         let light = Light::new(Tuple::point(0.0, 0.0, 10.0), Tuple::color(1.0, 1.0, 1.0));
-        let result = m.lighting(&Shape::test_shape(), &light, position, eyev, normalv, false);
+        let result = m.lighting(&Object::test_shape(), &light, position, eyev, normalv, false);
 
         assert_eq!(result, Tuple::color(0.1, 0.1, 0.1));
     }
@@ -205,7 +205,7 @@ mod tests {
         let normalv = Tuple::vector(0.0, 0.0, -1.0);
         let light = Light::new(Tuple::point(0.0, 0.0, -10.0), Tuple::color(1.0, 1.0, 1.0));
         let in_shadow = true;
-        let result = m.lighting(&Shape::test_shape(), &light, position, eyev, normalv, in_shadow);
+        let result = m.lighting(&Object::test_shape(), &light, position, eyev, normalv, in_shadow);
         assert_eq!(result, Tuple::color(0.1, 0.1, 0.1));
     }
 

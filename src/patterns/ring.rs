@@ -1,15 +1,14 @@
-use crate::{matrix::Matrix, tuple::{Color, Point}};
+use crate::tuple::{Color, Point};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Ring {
     pub a: Color,
     pub b: Color,
-    pub transform: Matrix,
 }
 
 impl Ring {
     pub fn new(a: Color, b: Color) -> Ring {
-        Ring { a, b, transform: Matrix::identity() }
+        Ring { a, b }
     }
 
     pub fn ring_at(&self, point: Point) -> Color {
@@ -18,26 +17,6 @@ impl Ring {
         } else {
             self.b
         }
-    }
-
-    pub fn ring_at_shape(&self, shape: &crate::shape::Shape, world_point: Point) -> Color {
-        let object_point = shape.get_transform().inverse() * world_point;
-        let pattern_point = self.get_transform().inverse() * object_point;
-        self.ring_at(pattern_point)
-    }
-
-    pub fn get_transform(&self) -> &Matrix {
-        &self.transform
-    }
-
-    pub fn set_transform(&mut self, transform: Matrix) {
-        self.transform = transform;
-    }
-
-    pub fn with_transform(&self, transform: Matrix) -> Ring {
-        let mut new_stripe = self.clone();
-        new_stripe.set_transform(transform);
-        new_stripe
     }
 }
 
