@@ -2,6 +2,7 @@ use crate::intersection::Intersection;
 use crate::material::Material;
 use crate::matrix::Matrix;
 use crate::ray::Ray;
+use crate::shapes::cube::Cube;
 use crate::shapes::plane::Plane;
 use crate::shapes::sphere::Sphere;
 use crate::shapes::test_shape::TestShape;
@@ -11,7 +12,8 @@ use crate::tuple::{Point, Vector};
 pub enum Shape {
     Sphere(Sphere),
     TestShape(TestShape),
-    Plane(Plane)
+    Plane(Plane),
+    Cube(Cube),
 }
 
 impl Shape {
@@ -33,6 +35,7 @@ impl Shape {
             Shape::Sphere(s) => s.local_intersect(&local_ray),
             Shape::TestShape(s) => s.local_intersect(&local_ray),
             Shape::Plane(s) => s.local_intersect(&local_ray),
+            Shape::Cube(s) => s.local_intersect(&local_ray),
         }
     }
 
@@ -42,6 +45,7 @@ impl Shape {
             Shape::Sphere(s) => s.local_normal_at(&local_point),
             Shape::TestShape(s) => s.local_normal_at(&local_point),
             Shape::Plane(s) => s.local_normal_at(),
+            Shape::Cube(s) => s.local_normal_at(&local_point),
         };
         let mut world_normal = self.get_transform().inverse().transpose() * local_normal;
         world_normal.3 = 0.0;
@@ -53,6 +57,7 @@ impl Shape {
             Shape::Sphere(s) => s.get_transform(),
             Shape::TestShape(s) => s.get_transform(),
             Shape::Plane(s) => s.get_transform(),
+            Shape::Cube(s) => s.get_transform(),
         }
     }
 
@@ -61,6 +66,7 @@ impl Shape {
             Shape::Sphere(s) => s.set_transform(transform),
             Shape::TestShape(s) => s.set_transform(transform),
             Shape::Plane(s) => s.set_transform(transform),
+            Shape::Cube(s) => s.set_transform(transform),
         }
     }
 
@@ -69,6 +75,7 @@ impl Shape {
             Shape::Sphere(s) => Shape::Sphere(s.with_transform(transform)),
             Shape::TestShape(s) => Shape::TestShape(s.with_transform(transform)),
             Shape::Plane(s) => Shape::Plane(s.with_transform(transform)),
+            Shape::Cube(s) => Shape::Cube(s.with_transform(transform)),
         }
     }
 
@@ -77,6 +84,7 @@ impl Shape {
             Shape::Sphere(s) => s.get_material(),
             Shape::TestShape(s) => s.get_material(),
             Shape::Plane(s) => s.get_material(),
+            Shape::Cube(s) => s.get_material(),
         }
     }
 
@@ -85,6 +93,7 @@ impl Shape {
             Shape::Sphere(s) => s.set_material(material),
             Shape::TestShape(s) => s.set_material(material),
             Shape::Plane(s) => s.set_material(material),
+            Shape::Cube(s) => s.set_material(material),
         }
     }
 
@@ -93,6 +102,7 @@ impl Shape {
             Shape::Sphere(s) => Shape::Sphere(s.with_material(material)),
             Shape::TestShape(s) => Shape::TestShape(s.with_material(material)),
             Shape::Plane(s) => Shape::Plane(s.with_material(material)),
+            Shape::Cube(s) => Shape::Cube(s.with_material(material)),
         }
     }
 }
