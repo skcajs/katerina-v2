@@ -44,6 +44,14 @@ impl Object {
         }
     }
 
+    pub fn cylinder () -> Object {
+        Object {
+            shape: Shape::Cylinder(crate::shapes::cylinder::Cylinder::new()),
+            transform: Matrix::identity(),
+            material: Material::new(),
+        }
+    }
+
     pub fn intersect(&self, ray: &Ray) -> Vec<Intersection> {
         let itx = self.shape.local_intersect(&ray.transform(&self.transform.inverse()));
         itx.into_iter().map(|t| Intersection::new(t, self)).collect()

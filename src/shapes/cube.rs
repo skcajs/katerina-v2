@@ -1,15 +1,11 @@
-use crate::{material::Material, matrix::Matrix, ray::Ray, tuple::Tuple};
+use crate::{ray::Ray, tuple::Tuple};
 
 #[derive(Clone, PartialEq, Debug)]
-pub struct Cube {
-    pub side: f64,
-    transform: Matrix,
-    material: Material,
-}
+pub struct Cube;
 
 impl Cube {
     pub fn new() -> Cube {
-        Cube { side: 1.0, transform: Matrix::identity(), material: Material::new() }
+        Cube
     }
 
     pub fn local_intersect(&self, ray: &Ray) -> Vec<f64> {
@@ -37,34 +33,6 @@ impl Cube {
         } else {
             Tuple::vector(0.0, 0.0, point.2)
         }
-    }
-
-    pub fn get_transform(&self) -> &Matrix {
-        &self.transform
-    }
-
-    pub fn set_transform(&mut self, transform: Matrix) {
-        self.transform = transform;
-    }
-
-    pub fn with_transform(&self, transform: Matrix) -> Cube {
-        let mut new_sphere = self.clone();
-        new_sphere.set_transform(transform);
-        new_sphere
-    }
-
-    pub fn get_material(&self) -> &Material {
-        &self.material
-    }
-
-    pub fn set_material(&mut self, material: Material) {
-        self.material = material;
-    }
-
-    pub fn with_material(&self, material: Material) -> Cube {
-        let mut new_sphere = self.clone();
-        new_sphere.set_material(material);
-        new_sphere
     }
 
     fn check_axis(&self, origin: f64, direction: f64) -> (f64, f64) {

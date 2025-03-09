@@ -1,17 +1,11 @@
 use crate::{ray::Ray, tuple::Tuple};
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Plane {
-    normal: Tuple,
-    distance: f32,
-}
+pub struct Plane;
 
 impl Plane {
     pub fn new() -> Plane {
-        Plane {
-            normal: Tuple::vector(0.0, 1.0, 0.0),
-            distance: 0.0,
-        }
+        Plane {}
     }
 
     pub fn local_intersect(&self, ray: &Ray) -> Vec<f64> {
@@ -24,7 +18,7 @@ impl Plane {
     }
 
     pub fn local_normal_at(&self) -> Tuple {
-        self.normal
+        Tuple::vector(0.0, 1.0, 0.0)
     }
 }
 

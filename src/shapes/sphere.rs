@@ -3,17 +3,11 @@ use crate::ray::Ray;
 
 
 #[derive(Clone, PartialEq, Debug)]
-pub struct Sphere {
-    origin: Tuple,
-    radius: f64,
-}
+pub struct Sphere;
 
 impl Sphere {
     pub fn new() -> Sphere {
-        Sphere {
-            origin: Tuple::point(0.0, 0.0, 0.0),
-            radius: 1.,
-        }
+        Sphere {}
     }
 
     pub fn local_intersect(&self, ray: &Ray) -> Vec<f64> {
