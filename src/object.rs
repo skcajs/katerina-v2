@@ -1,55 +1,40 @@
-use crate::{intersection::Intersection, material::Material, matrix::Matrix, ray::Ray, shape::Shape, shapes::{cube::Cube, plane::Plane, sphere::Sphere}, tuple::{Point, Vector}};
+use crate::{intersection::Intersection, material::Material, matrix::Matrix, ray::Ray, shape::Shape, shapes::{cone::Cone, cube::Cube, cylinder::Cylinder, plane::Plane, sphere::Sphere, test_shape::TestShape}, tuple::{Point, Vector}};
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Object {
     pub shape: Shape,
     pub transform: Matrix,
     pub material: Material,
+    pub parent: Option<usize>,
 }
 
 impl Object {
-    pub fn new(shape: Shape, transform: Matrix, material: Material) -> Object {
-        Object { shape, transform, material }
+    pub fn new(shape: Shape) -> Object {
+        Object { shape, transform: Matrix::identity(), material: Material::new(), parent: None }
     }
 
     pub fn test_shape() -> Object {
-        Object {
-            shape: Shape::TestShape(crate::shapes::test_shape::TestShape::new()),
-            transform: Matrix::identity(),
-            material: Material::new(),
-        }
+        Object::new(Shape::TestShape(TestShape::new()))
     }
 
     pub fn sphere() -> Object {
-        Object {
-            shape: Shape::Sphere(Sphere::new()),
-            transform: Matrix::identity(),
-            material: Material::new(),
-        }
+        Object::new(Shape::Sphere(Sphere::new()))
     }
 
     pub fn plane() -> Object {
-        Object {
-            shape: Shape::Plane(Plane::new()),
-            transform: Matrix::identity(),
-            material: Material::new(),
-        }
+        Object::new(Shape::Plane(Plane::new()))
     }
 
     pub fn cube() -> Object {
-        Object {
-            shape: Shape::Cube(Cube::new()),
-            transform: Matrix::identity(),
-            material: Material::new(),
-        }
+        Object::new(Shape::Cube(Cube::new()))
     }
 
-    pub fn cylinder () -> Object {
-        Object {
-            shape: Shape::Cylinder(crate::shapes::cylinder::Cylinder::new()),
-            transform: Matrix::identity(),
-            material: Material::new(),
-        }
+    pub fn cylinder() -> Object {
+        Object::new(Shape::Cylinder(Cylinder::new()))
+    }
+
+    pub fn cone() -> Object {
+        Object::new(Shape::Cone(Cone::new()))
     }
 
     pub fn intersect(&self, ray: &Ray) -> Vec<Intersection> {
@@ -102,6 +87,7 @@ impl Default for Object {
             shape: Shape::Sphere(Sphere::new()),
             transform: Matrix::identity(),
             material: Material::new(),
+            parent: None,
         }
     }
 }
