@@ -1,12 +1,12 @@
 use crate::{intersection::Intersection, matrix::Matrix, object::Object, ray::Ray};
 
 #[derive(Debug, PartialEq, Clone)]
-pub struct Group {  // Add lifetime parameter here
-    children: Vec<Object>, // Adjust for Object lifetime
+pub struct Group {  
+    children: Vec<Object>, 
     transform: Matrix,
 }
 
-impl Group {  // Make the lifetime parameter explicit here
+impl Group {
     pub fn new() -> Group {
         Group {
             children: vec![],
@@ -29,7 +29,7 @@ impl Group {  // Make the lifetime parameter explicit here
     }
 
     pub fn add_child(&mut self, child: Object) {
-        self.children.push(child);
+        self.children.push(child.with_transform(&self.transform * child.get_transform()));
     }
 
     pub fn get_transform(&self) -> &Matrix {
@@ -38,6 +38,10 @@ impl Group {  // Make the lifetime parameter explicit here
 
     pub fn set_transform(&mut self, transform: Matrix) {
         self.transform = transform;
+
+        for child in &mut self.children {
+            child.set_transform(&self.transform * child.get_transform());
+        }
     }
 
     pub fn with_transform(&self, transform: Matrix) -> Group {
@@ -104,5 +108,19 @@ mod tests {
         let xs = g.intersect(&r);
         assert_eq!(xs.len(), 2);
     }
+
+    // #[test]
+    // fn converting_a_point_from_world_to_object_space() {
+    //     let mut g1 = Group::new();
+    //     g1.set_transform(Matrix::rotation_y(std::f64::consts::PI / 2.0));
+    //     let mut g2 = Group::new();
+    //     g2.set_transform(Matrix::scaling(2.0, 2.0, 2.0));
+    //     g1.add_child(g2);
+    //     let s = Object::sphere().with_transform(Matrix::translation(5.0, 0.0, 0.0));
+    //     g2.add_child(s.clone());
+    //     let p = s.world_to_object(&Tuple::point(-2.0, 0.0, -10.0));
+    //     assert_eq!(p, Tuple::point(0.0, 0.0, -1.0));
+    // }
+    
 }
 

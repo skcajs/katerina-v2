@@ -1,8 +1,8 @@
 use crate::{object::Object, ray::Ray, tuple::Tuple};
 
-pub struct Record {
+pub struct Record<'a> {
     pub t: f64,
-    pub object: Object,
+    pub object: &'a Object,
     pub point: Tuple,
     pub eyev: Tuple,
     pub normalv: Tuple,
@@ -68,7 +68,7 @@ impl<'a> Intersection<'a> {
 
         Record {
             t: self.t,
-            object: self.object.clone(),
+            object: self.object,
             point,
             eyev,
             normalv,

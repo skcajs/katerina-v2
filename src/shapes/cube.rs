@@ -1,4 +1,4 @@
-use crate::{ray::Ray, tuple::Tuple};
+use crate::{intersection::Intersection, object::Object, ray::Ray, tuple::Tuple};
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Cube;
@@ -8,7 +8,7 @@ impl Cube {
         Cube
     }
 
-    pub fn local_intersect(&self, ray: &Ray) -> Vec<f64> {
+    pub fn local_intersect<'a>(&self, object: &'a Object, ray: &Ray) -> Vec<Intersection<'a>> {
         let (xtmin, xtmax) = self.check_axis(ray.origin.0, ray.direction.0);
         let (ytmin, ytmax) = self.check_axis(ray.origin.1, ray.direction.1);
         let (ztmin, ztmax) = self.check_axis(ray.origin.2, ray.direction.2);
@@ -20,7 +20,10 @@ impl Cube {
             return vec![];
         }
 
-        vec![tmin, tmax]
+        vec![
+            Intersection::new(tmin, object), 
+            Intersection::new(tmax, object)
+            ]
     }
 
     pub fn local_normal_at(&self, point: &Tuple) -> Tuple {
@@ -55,25 +58,29 @@ impl Cube {
 
 #[cfg(test)]
 mod tests {
+    use std::sync::LazyLock;
+
     use crate::{ray::Ray, tuple::Tuple};
 
     use super::*;
+    static OBJECT: LazyLock<Object> = LazyLock::new(|| Object::test_shape());
+
 
     #[test]
     fn a_ray_intersects_a_cube() {
         let c = Cube::new();
         let r = Ray::new(Tuple::point(5.0, 0.5, 0.0), Tuple::vector(-1.0, 0.0, 0.0));
-        let xs = c.local_intersect(&r);
+        let xs = c.local_intersect(&OBJECT, &r);
         assert_eq!(xs.len(), 2);
-        assert_eq!(xs[0], 4.0);
-        assert_eq!(xs[1], 6.0);
+        assert_eq!(xs[0].t, 4.0);
+        assert_eq!(xs[1].t, 6.0);
     }
 
     #[test]
     fn a_ray_misses_a_cube() {
         let c = Cube::new();
         let r = Ray::new(Tuple::point(-2.0, 0.0, 0.0), Tuple::vector(0.2673, 0.5345, 0.8018));
-        let xs = c.local_intersect(&r);
+        let xs = c.local_intersect(&OBJECT, &r);
         assert_eq!(xs.len(), 0);
     }
 

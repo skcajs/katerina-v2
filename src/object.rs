@@ -38,8 +38,7 @@ impl Object {
     }
 
     pub fn intersect(&self, ray: &Ray) -> Vec<Intersection> {
-        let itx = self.shape.local_intersect(&ray.transform(&self.transform.inverse()));
-        itx.into_iter().map(|t| Intersection::new(t, self)).collect()
+        self.shape.local_intersect(self, &ray.transform(&self.transform.inverse()))
     }
 
     pub fn normal_at(&self, world_point: &Point) -> Vector {

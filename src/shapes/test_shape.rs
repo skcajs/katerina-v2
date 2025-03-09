@@ -1,4 +1,4 @@
-use crate::ray::Ray;
+use crate::intersection::Intersection;
 use crate::tuple::{Point, Tuple};
 
 #[derive(Debug, Clone, PartialEq)]
@@ -11,7 +11,7 @@ impl TestShape {
         }
     }
 
-    pub fn local_intersect(&self, _ray: &Ray) -> Vec<f64> {
+    pub fn local_intersect<'a>(&'a self) -> Vec<Intersection<'a>> {
         vec![]
     }
 

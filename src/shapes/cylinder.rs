@@ -1,4 +1,4 @@
-use crate::{ray::Ray, tuple::Tuple};
+use crate::{intersection::Intersection, object::Object, ray::Ray, tuple::Tuple};
 
 
 #[derive(Debug, Clone, PartialEq)]
@@ -19,7 +19,7 @@ impl Cylinder {
         }
     }
 
-    pub fn local_intersect(&self, ray: &Ray) -> Vec<f64> {
+    pub fn local_intersect<'a>(&self, object: &'a Object, ray: &Ray) -> Vec<Intersection<'a>> {
         let mut xs = vec![];
         let a = ray.direction.0.powi(2) + ray.direction.2.powi(2);
         if a.abs() > 1e-6 {
@@ -36,16 +36,16 @@ impl Cylinder {
 
                 let y0 = ray.origin.1 + t0 * ray.direction.1;
                 if self.minimum < y0 && y0 < self.maximum {
-                    xs.push(t0);
+                    xs.push(Intersection::new(t0, object));
                 }
 
                 let y1 = ray.origin.1 + t1 * ray.direction.1;
                 if self.minimum < y1 && y1 < self.maximum {
-                    xs.push(t1);
+                    xs.push(Intersection::new(t1, object));
                 }
             }
         }
-        self.intersect_caps(ray, &mut xs);
+        self.intersect_caps(object, ray, &mut xs);
         xs
     }
 
@@ -66,42 +66,46 @@ impl Cylinder {
         x.powi(2) + z.powi(2) <= 1.0
     }
 
-    pub fn intersect_caps(&self, ray: &Ray, xs: &mut Vec<f64>) {
+    pub fn intersect_caps<'a>(&self, object: &'a Object, ray: &Ray, xs: &mut Vec<Intersection<'a>>) {
         if !self.closed || ray.direction.1.abs() < 1e-6 {
             return;
         }
 
         let t = (self.minimum - ray.origin.1) / ray.direction.1;
         if self.check_cap(ray, t) {
-            xs.push(t);
+            xs.push(Intersection::new(t, object));
         }
 
         let t = (self.maximum - ray.origin.1) / ray.direction.1;
         if self.check_cap(ray, t) {
-            xs.push(t);
+            xs.push(Intersection::new(t, object));
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use std::sync::LazyLock;
+
     use super::*;
 
     use crate::ray::Ray;
+    static OBJECT: LazyLock<Object> = LazyLock::new(|| Object::test_shape());
+
 
     #[test]
     fn a_ray_misses_a_cylinder() {
         let c = Cylinder::new();
         let r = Ray::new(Tuple::point(1.0, 0.0, 0.0), Tuple::vector(0.0, 1.0, 0.0));
-        let xs = c.local_intersect(&r);
+        let xs = c.local_intersect(&OBJECT, &r);
         assert_eq!(xs.len(), 0);
 
         let r = Ray::new(Tuple::point(0.0, 0.0, 0.0), Tuple::vector(0.0, 1.0, 0.0));
-        let xs = c.local_intersect(&r);
+        let xs = c.local_intersect(&OBJECT, &r);
         assert_eq!(xs.len(), 0);
 
         let r = Ray::new(Tuple::point(0.0, 0.0, -5.0), Tuple::vector(1.0, 1.0, 1.0));
-        let xs = c.local_intersect(&r);
+        let xs = c.local_intersect(&OBJECT, &r);
         assert_eq!(xs.len(), 0);
     }
 
@@ -109,24 +113,23 @@ mod tests {
     fn a_ray_strikes_a_cylinder() {
         let c = Cylinder::new();
         let r = Ray::new(Tuple::point(1.0, 0.0, -5.0), Tuple::vector(0.0, 0.0, 1.0));
-        let xs = c.local_intersect(&r);
+        let xs = c.local_intersect(&OBJECT, &r);
         assert_eq!(xs.len(), 2);
-        assert_eq!(xs[0], 5.0);
-        assert_eq!(xs[1], 5.0);
+        assert_eq!(xs[0].t, 5.0);
+        assert_eq!(xs[1].t, 5.0);
 
         let r = Ray::new(Tuple::point(0.0, 0.0, -5.0), Tuple::vector(0.0, 0.0, 1.0));
-        let xs = c.local_intersect(&r);
+        let xs = c.local_intersect(&OBJECT, &r);
         assert_eq!(xs.len(), 2);
-        assert_eq!(xs[0], 4.0);
-        assert_eq!(xs[1], 6.0);
+        assert_eq!(xs[0].t, 4.0);
+        assert_eq!(xs[1].t, 6.0);
 
         let r = Ray::new(Tuple::point(0.5, 0.0, -5.0), Tuple::vector(0.1, 1.0, 1.0).normalize());
-        let xs = c.local_intersect(&r);
+        let xs = c.local_intersect(&OBJECT, &r);
         assert_eq!(xs.len(), 2);
-        assert!((xs[0] - 6.80798).abs() < 1e-5);
-        assert!((xs[1] - 7.08872).abs() < 1e-5);
+        assert!((xs[0].t - 6.80798).abs() < 1e-5);
+        assert!((xs[1].t - 7.08872).abs() < 1e-5);
     }
- 
 
     #[test]
     fn normal_vector_on_a_cylinder() {
@@ -160,27 +163,27 @@ mod tests {
         };
 
         let r = Ray::new(Tuple::point(0.0, 1.5, 0.0), Tuple::vector(0.1, 1.0, 0.0).normalize());
-        let xs = c.local_intersect(&r);
+        let xs = c.local_intersect(&OBJECT, &r);
         assert_eq!(xs.len(), 0);
 
         let r = Ray::new(Tuple::point(0.0, 3.0, -5.0), Tuple::vector(0.0, 0.0, 1.0));
-        let xs = c.local_intersect(&r);
+        let xs = c.local_intersect(&OBJECT, &r);
         assert_eq!(xs.len(), 0);
 
         let r = Ray::new(Tuple::point(0.0, 0.0, -5.0), Tuple::vector(0.0, 0.0, 1.0));
-        let xs = c.local_intersect(&r);
+        let xs = c.local_intersect(&OBJECT, &r);
         assert_eq!(xs.len(), 0);
 
         let r = Ray::new(Tuple::point(0.0, 2.0, -5.0), Tuple::vector(0.0, 0.0, 1.0));
-        let xs = c.local_intersect(&r);
+        let xs = c.local_intersect(&OBJECT, &r);
         assert_eq!(xs.len(), 0);
 
         let r = Ray::new(Tuple::point(0.0, 1.0, -5.0), Tuple::vector(0.0, 0.0, 1.0));
-        let xs = c.local_intersect(&r);
+        let xs = c.local_intersect(&OBJECT, &r);
         assert_eq!(xs.len(), 0);
 
         let r = Ray::new(Tuple::point(0.0, 1.5, -2.0), Tuple::vector(0.0, 0.0, 1.0));
-        let xs = c.local_intersect(&r);
+        let xs = c.local_intersect(&OBJECT, &r);
         assert_eq!(xs.len(), 2);
     }
 
@@ -199,23 +202,23 @@ mod tests {
         };
 
         let r = Ray::new(Tuple::point(0.0, 3.0, 0.0), Tuple::vector(0.0, -1.0, 0.0));
-        let xs = c.local_intersect(&r);
+        let xs = c.local_intersect(&OBJECT, &r);
         assert_eq!(xs.len(), 2);
 
         let r = Ray::new(Tuple::point(0.0, 3.0, -2.0), Tuple::vector(0.0, -1.0, 2.0));
-        let xs = c.local_intersect(&r);
+        let xs = c.local_intersect(&OBJECT, &r);
         assert_eq!(xs.len(), 2);
 
         let r = Ray::new(Tuple::point(0.0, 4.0, -2.0), Tuple::vector(0.0, -1.0, 1.0));
-        let xs = c.local_intersect(&r);
+        let xs = c.local_intersect(&OBJECT, &r);
         assert_eq!(xs.len(), 2);
 
         let r = Ray::new(Tuple::point(0.0, 0.0, -2.0), Tuple::vector(0.0, 1.0, 2.0));
-        let xs = c.local_intersect(&r);
+        let xs = c.local_intersect(&OBJECT, &r);
         assert_eq!(xs.len(), 2);
 
         let r = Ray::new(Tuple::point(0.0, -1.0, -2.0), Tuple::vector(0.0, 1.0, 1.0));
-        let xs = c.local_intersect(&r);
+        let xs = c.local_intersect(&OBJECT, &r);
         assert_eq!(xs.len(), 2);
     }
 

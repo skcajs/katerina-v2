@@ -88,7 +88,7 @@ mod tests {
         let i = Intersection::new(4.0, &shape);
         let comps = i.prepare_computations(&r, &vec![]);
         assert_eq!(comps.t, i.t);
-        assert_eq!(comps.object, *i.object);
+        assert_eq!(comps.object, i.object);
         assert_eq!(comps.point, Tuple::point(0.0, 0.0, -1.0));
         assert_eq!(comps.eyev, Tuple::vector(0.0, 0.0, -1.0));
         assert_eq!(comps.normalv, Tuple::vector(0.0, 0.0, -1.0));

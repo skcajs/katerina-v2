@@ -16,4 +16,3 @@ pub mod shape;
 pub mod patterns;
 pub mod pattern;
 pub mod helper;
-pub mod group;
