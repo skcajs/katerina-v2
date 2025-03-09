@@ -1,11 +1,11 @@
-use crate::{intersection::Intersection, material::Material, matrix::Matrix, ray::Ray, shape::Shape, shapes::{cone::Cone, cube::Cube, cylinder::Cylinder, plane::Plane, sphere::Sphere, test_shape::TestShape}, tuple::{Point, Vector}};
+use crate::{intersection::Intersection, material::Material, matrix::Matrix, ray::Ray, shape::Shape, shapes::{cone::Cone, cube::Cube, cylinder::Cylinder, group::Group, plane::Plane, sphere::Sphere, test_shape::TestShape}, tuple::{Point, Vector}};
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Object {
     pub shape: Shape,
     pub transform: Matrix,
     pub material: Material,
-    pub parent: Option<usize>,
+    pub parent: Option<Box<Object>>,
 }
 
 impl Object {
@@ -35,6 +35,18 @@ impl Object {
 
     pub fn cone() -> Object {
         Object::new(Shape::Cone(Cone::new()))
+    }
+
+    pub fn group() -> Object {
+        Object::new(Shape::Group(Group::new()))
+    }
+
+    pub fn as_group(&mut self) -> Option<&mut Group> {
+        if let Shape::Group(ref mut group) = self.shape {
+            Some(group)
+        } else {
+            None
+        }
     }
 
     pub fn intersect(&self, ray: &Ray) -> Vec<Intersection> {
@@ -75,6 +87,15 @@ impl Object {
         let mut new_object = self.clone();
         new_object.set_material(material);
         new_object
+    }
+
+    pub fn world_to_object(&self, world_point: &Point) -> Point {
+        if let Some(parent) = &self.parent {
+            let point = parent.world_to_object(world_point);
+            self.transform.inverse() * point
+        } else {
+            self.transform.inverse() * *world_point
+        }
     }
 
     
@@ -166,5 +187,24 @@ mod tests {
         assert!((n.0 - 0.0).abs() < delta);
         assert!((n.1 - 0.97014).abs() < delta);
         assert!((n.2 + 0.24254).abs() < delta);
+    }
+
+    #[test]
+    fn a_shape_has_a_parent_attribute() {
+        let s = Object::test_shape();
+        assert!(s.parent.is_none());
+    }
+
+    #[test]
+    fn converting_a_point_from_world_to_object_space() {
+        let mut g1 = Object::group();
+        g1.set_transform(Matrix::rotation_y(std::f64::consts::PI / 2.0));
+        let mut g2 = Object::group();
+        g2.set_transform(Matrix::scaling(2.0, 2.0, 2.0));
+        g1.as_group().unwrap().add_child(g2.clone());
+        let s = Object::sphere().with_transform(Matrix::translation(5.0, 0.0, 0.0));
+        g2.as_group().unwrap().add_child(s.clone());
+        let p = s.world_to_object(&Tuple::point(-2.0, 0.0, -10.0));
+        assert_eq!(p, Tuple::point(0.0, 0.0, -1.0));
     }
 }

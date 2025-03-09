@@ -58,19 +58,17 @@ impl Cube {
 
 #[cfg(test)]
 mod tests {
-    use std::sync::LazyLock;
 
     use crate::{ray::Ray, tuple::Tuple};
-
     use super::*;
-    static OBJECT: LazyLock<Object> = LazyLock::new(|| Object::test_shape());
 
 
     #[test]
     fn a_ray_intersects_a_cube() {
+        let object =  Object::test_shape();
         let c = Cube::new();
         let r = Ray::new(Tuple::point(5.0, 0.5, 0.0), Tuple::vector(-1.0, 0.0, 0.0));
-        let xs = c.local_intersect(&OBJECT, &r);
+        let xs = c.local_intersect(&object, &r);
         assert_eq!(xs.len(), 2);
         assert_eq!(xs[0].t, 4.0);
         assert_eq!(xs[1].t, 6.0);
@@ -78,9 +76,10 @@ mod tests {
 
     #[test]
     fn a_ray_misses_a_cube() {
+        let object =  Object::test_shape();
         let c = Cube::new();
         let r = Ray::new(Tuple::point(-2.0, 0.0, 0.0), Tuple::vector(0.2673, 0.5345, 0.8018));
-        let xs = c.local_intersect(&OBJECT, &r);
+        let xs = c.local_intersect(&object, &r);
         assert_eq!(xs.len(), 0);
     }
 

@@ -96,28 +96,26 @@ impl Cone {
 mod tests {
     use super::*;
     use crate::ray::Ray;
-    use std::sync::LazyLock;
-
-    static OBJECT: LazyLock<Object> = LazyLock::new(|| Object::test_shape());
 
     #[test]
     fn intersecting_cone_with_ray() {
+        let object =  Object::test_shape();
         let cone = Cone::new();
         let r = Ray::new(Tuple::point(0.0, 0.0, -5.0), Tuple::vector(0.0, 0.0, 1.0));
-        let xs = cone.local_intersect(&OBJECT, &r);
+        let xs = cone.local_intersect(&object, &r);
         assert_eq!(xs.len(), 2);
         assert_eq!(xs[0].t, 5.0);
         assert_eq!(xs[1].t, 5.0);
 
         let r = Ray::new(Tuple::point(0.0, 0.0, -5.0), Tuple::vector(1.0, 1.0, 1.0).normalize());
-        let xs = cone.local_intersect(&OBJECT, &r);
+        let xs = cone.local_intersect(&object, &r);
         assert_eq!(xs.len(), 2);
         let delta = 1e-4;
         assert!((xs[0].t - 8.66025).abs() < delta);
         assert!((xs[1].t - 8.66025).abs() < delta);
 
         let r = Ray::new(Tuple::point(1.0, 1.0, -5.0), Tuple::vector(-0.5, -1.0, 1.0).normalize());
-        let xs = cone.local_intersect(&OBJECT, &r);
+        let xs = cone.local_intersect(&object, &r);
         assert_eq!(xs.len(), 2);
         let delta = 1e-4;
         assert!((xs[0].t - 4.55006).abs() < delta);
@@ -126,9 +124,11 @@ mod tests {
 
     #[test]
     fn intersecting_a_cone_with_a_ray_parallel_to_one_of_its_halves() {
+        let object =  Object::test_shape();
+
         let cone = Cone::new();
         let r = Ray::new(Tuple::point(0.0, 0.0, -1.0), Tuple::vector(0.0, 1.0, 1.0).normalize());
-        let xs = cone.local_intersect(&OBJECT, &r);
+        let xs = cone.local_intersect(&object, &r);
         assert_eq!(xs.len(), 1);
         let delta = 1e-4;
         assert!((xs[0].t - 0.35355).abs() < delta);
@@ -136,21 +136,22 @@ mod tests {
 
     #[test]
     fn intersecting_a_cone_end_caps() {
+        let object =  Object::test_shape();
         let cone = Cone {
             minimum: -0.5,
             maximum: 0.5,
             closed: true,
         };
         let r = Ray::new(Tuple::point(0.0, 0.0, -5.0), Tuple::vector(0.0, 1.0, 0.0).normalize());
-        let xs = cone.local_intersect(&OBJECT, &r);
+        let xs = cone.local_intersect(&object, &r);
         assert_eq!(xs.len(), 0);
 
         let r = Ray::new(Tuple::point(0.0, 0.0, -0.25), Tuple::vector(0.0, 1.0, 1.0).normalize());
-        let xs = cone.local_intersect(&OBJECT, &r);
+        let xs = cone.local_intersect(&object, &r);
         assert_eq!(xs.len(), 2);
 
         let r = Ray::new(Tuple::point(0.0, 0.0, -0.25), Tuple::vector(0.0, 1.0, 0.0).normalize());
-        let xs = cone.local_intersect(&OBJECT, &r);
+        let xs = cone.local_intersect(&object, &r);
         assert_eq!(xs.len(), 4);
     }
 

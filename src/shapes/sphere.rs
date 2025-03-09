@@ -3,7 +3,6 @@ use crate::object::Object;
 use crate::tuple::Tuple;
 use crate::ray::Ray;
 
-
 #[derive(Clone, PartialEq, Debug)]
 pub struct Sphere;
 
@@ -38,18 +37,16 @@ impl Sphere {
 
 #[cfg(test)]
 mod tests {
-    use std::sync::LazyLock;
-
     use super::*;
 
     use crate::{helper::glass_sphere, matrix::Matrix, object::Object, transformation::Transformation};
-    static OBJECT: LazyLock<Object> = LazyLock::new(|| Object::test_shape());
 
     #[test]
     fn a_ray_intersects_a_sphere_at_two_points() {
+        let object = Object::test_shape();
         let r = Ray::new(Tuple::point(0.0, 0.0, -5.0), Tuple::vector(0.0, 0.0, 1.0));
         let s = Sphere::new();
-        let xs = s.local_intersect(&OBJECT, &r);
+        let xs = s.local_intersect(&object, &r);
         assert_eq!(xs.len(), 2);
         assert_eq!(xs[0].t, 4.0);
         assert_eq!(xs[1].t, 6.0);
@@ -57,17 +54,19 @@ mod tests {
 
     #[test]
     fn a_ray_misses_a_sphere() {
+        let object = Object::test_shape();
         let r = Ray::new(Tuple::point(0.0, 0.0, -5.0), Tuple::vector(0.0, 1.0, 0.0));
         let s = Sphere::new();
-        let xs = s.local_intersect(&OBJECT, &r);
+        let xs = s.local_intersect(&object, &r);
         assert_eq!(xs.len(), 0);
     }
 
     #[test]
     fn a_ray_originates_inside_a_sphere() {
+        let object = Object::test_shape();
         let r = Ray::new(Tuple::point(0.0, 0.0, 0.0), Tuple::vector(0.0, 0.0, 1.0));
         let s = Sphere::new();
-        let xs = s.local_intersect(&OBJECT, &r);
+        let xs = s.local_intersect(&object, &r);
         assert_eq!(xs.len(), 2);
         assert_eq!(xs[0].t, -1.0);
         assert_eq!(xs[1].t, 1.0);
@@ -75,9 +74,10 @@ mod tests {
 
     #[test]
     fn a_sphere_is_behind_a_ray() {
-        let r = Ray::new(Tuple::point(0.0, 0.0, 5.0), Tuple::vector(0.0, 0.0, 1.0));
+        let object = Object::test_shape();
+        let r: Ray = Ray::new(Tuple::point(0.0, 0.0, 5.0), Tuple::vector(0.0, 0.0, 1.0));
         let s = Sphere::new();
-        let xs = s.local_intersect(&OBJECT, &r);
+        let xs = s.local_intersect(&object, &r);
         assert_eq!(xs.len(), 2);
         assert_eq!(xs[0].t, -6.0);
         assert_eq!(xs[1].t, -4.0);

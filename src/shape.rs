@@ -4,6 +4,7 @@ use crate::ray::Ray;
 use crate::shapes::cone::Cone;
 use crate::shapes::cube::Cube;
 use crate::shapes::cylinder::Cylinder;
+use crate::shapes::group::Group;
 use crate::shapes::plane::Plane;
 use crate::shapes::sphere::Sphere;
 use crate::shapes::test_shape::TestShape;
@@ -17,6 +18,7 @@ pub enum Shape {
     Cube(Cube),
     Cylinder(Cylinder),
     Cone(Cone),
+    Group(Group),
 }
 
 impl Shape {
@@ -28,6 +30,7 @@ impl Shape {
             Shape::Cube(s) => s.local_intersect(object, &local_ray),
             Shape::Cylinder(s) => s.local_intersect(object, &local_ray),
             Shape::Cone(s) => s.local_intersect(object, &local_ray),
+            Shape::Group(s) => s.local_intersect(&local_ray),
         }
     }
 
@@ -39,6 +42,7 @@ impl Shape {
             Shape::Cube(s) => s.local_normal_at(&local_point),
             Shape::Cylinder(s) => s.local_normal_at(&local_point),
             Shape::Cone(s) => s.local_normal_at(&local_point),
+            Shape::Group(_s) => panic!("Group does not have a normal"),
         }
     }
 }
