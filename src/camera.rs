@@ -65,7 +65,7 @@ impl Camera {
         image.pixels_mut().par_chunks_mut(self.hsize).enumerate().for_each(|(y, row)| {
             for (x, pixel) in row.iter_mut().enumerate() {
                 let ray = self.ray_for_pixel(x, y);
-                let color = world.color_at(&ray);
+                let color = world.color_at(&ray, 4);
                 *pixel = color;
             }
         });

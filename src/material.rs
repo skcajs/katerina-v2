@@ -11,6 +11,9 @@ pub struct Material {
     pub diffuse: f64,
     pub specular: f64,
     pub shininess: f64,
+    pub reflectivity: f64,
+    pub transparency: f64,
+    pub refractive_index: f64,
     pub pattern: Option<Pattern>,
 }
 
@@ -22,6 +25,9 @@ impl Material {
             diffuse: 0.9,
             specular: 0.9,
             shininess: 200.0,
+            reflectivity: 0.0,
+            transparency: 0.0,
+            refractive_index: 1.0,
             pattern: None,
         }
     }
@@ -48,6 +54,21 @@ impl Material {
 
     pub fn with_shininess(mut self, shininess: f64) -> Self {
         self.shininess = shininess;
+        self
+    }
+
+    pub fn with_reflectivity(mut self, reflectivity: f64) -> Self {
+        self.reflectivity = reflectivity;
+        self
+    }
+
+    pub fn with_transparency(mut self, transparency: f64) -> Self {
+        self.transparency = transparency;
+        self
+    }
+
+    pub fn with_refractive_index(mut self, refractive_index: f64) -> Self {
+        self.refractive_index = refractive_index;
         self
     }
 
@@ -186,5 +207,18 @@ mod tests {
         let in_shadow = true;
         let result = m.lighting(&Shape::test_shape(), &light, position, eyev, normalv, in_shadow);
         assert_eq!(result, Tuple::color(0.1, 0.1, 0.1));
+    }
+
+    #[test]
+    fn reflectivity_for_the_default_material() {
+        let m = Material::new();
+        assert_eq!(m.reflectivity, 0.0);
+    }
+
+    #[test]
+    fn transparency_and_refractive_index_for_the_default_material() {
+        let m = Material::new();
+        assert_eq!(m.transparency, 0.0);
+        assert_eq!(m.refractive_index, 1.0);
     }
 }

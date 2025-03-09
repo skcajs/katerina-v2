@@ -81,7 +81,7 @@ impl Sphere {
 mod tests {
     use super::*;
 
-    use crate::transformation::Transformation;
+    use crate::{helper::glass_sphere, transformation::Transformation};
 
     #[test]
     fn a_ray_intersects_a_sphere_at_two_points() {
@@ -235,5 +235,12 @@ mod tests {
         let m = Material::new().with_ambient(1.0);
         s.set_material(m.clone());
         assert_eq!(s.material, m);
+    }
+
+    #[test]
+    fn a_helper_for_producing_a_sphere_with_a_glassy_material() {
+        let s = glass_sphere();
+        assert_eq!(s.get_material().transparency, 1.0);
+        assert_eq!(s.get_material().refractive_index, 1.5);
     }
 }

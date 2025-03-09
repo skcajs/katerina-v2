@@ -16,7 +16,7 @@ impl Intersections for Vec<Intersection> {
 #[cfg(test)]
 mod tests {
     use std::vec;
-    use crate::{ray::Ray, shape::Shape, tuple::Tuple};
+    use crate::{helper::glass_sphere, matrix::Matrix, ray::Ray, shape::Shape, transformation::Transformation, tuple::Tuple};
 
     use super::*;
 
@@ -86,7 +86,7 @@ mod tests {
         let r = Ray::new(Tuple::point(0.0, 0.0, -5.0), Tuple::vector(0.0, 0.0, 1.0));
         let shape = Shape::sphere();
         let i = Intersection::new(4.0, shape.clone());
-        let comps = i.prepare_computations(&r);
+        let comps = i.prepare_computations(&r, &vec![]);
         assert_eq!(comps.t, i.t);
         assert_eq!(comps.object, i.object);
         assert_eq!(comps.point, Tuple::point(0.0, 0.0, -1.0));
@@ -99,7 +99,7 @@ mod tests {
         let r = Ray::new(Tuple::point(0.0, 0.0, -5.0), Tuple::vector(0.0, 0.0, 1.0));
         let shape = Shape::sphere();
         let i = Intersection::new(4.0, shape.clone());
-        let comps = i.prepare_computations(&r);
+        let comps = i.prepare_computations(&r, &vec![]);
         assert_eq!(comps.inside, false);
     }
 
@@ -108,20 +108,129 @@ mod tests {
         let r = Ray::new(Tuple::point(0.0, 0.0, 0.0), Tuple::vector(0.0, 0.0, 1.0));
         let shape = Shape::sphere();
         let i = Intersection::new(1.0, shape.clone());
-        let comps = i.prepare_computations(&r);
+        let comps = i.prepare_computations(&r, &vec![]);
         assert_eq!(comps.point, Tuple::point(0.0, 0.0, 1.0));
         assert_eq!(comps.eyev, Tuple::vector(0.0, 0.0, -1.0));
         assert_eq!(comps.inside, true);
         assert_eq!(comps.normalv, Tuple::vector(0.0, 0.0, -1.0));
     }
 
-    // #[test]
-    // fn the_hit_should_offset_the_point() {
-    //     let r = Ray::new(Tuple::point(0.0, 0.0, -5.0), Tuple::vector(0.0, 0.0, 1.0));
-    //     let shape = Sphere::new().with_transform(Matrix::translation(0.0, 0.0, 1.0));
-    //     let i = Intersection::new(5.0, &shape);
-    //     let comps = i.prepare_computations(&r);
-    //     assert!(comps.over_point.2 < -std::f64::EPSILON / 2.0);
-    //     assert!(comps.point.2 > comps.over_point.2);
-    // }
+    #[test]
+    fn the_hit_should_offset_the_point() {
+        let r = Ray::new(Tuple::point(0.0, 0.0, -5.0), Tuple::vector(0.0, 0.0, 1.0));
+        let shape = Shape::sphere().with_transform(Matrix::translation(0.0, 0.0, 1.0));
+        let i = Intersection::new(5.0, shape.clone());
+        let comps = i.prepare_computations(&r, &vec![]);
+        assert!(comps.over_point.2 < -std::f64::EPSILON / 2.0);
+        assert!(comps.point.2 > comps.over_point.2);
+    }
+
+    #[test]
+    fn precomputing_the_reflection_vector() {
+        let shape = Shape::plane();
+        let r = Ray::new(Tuple::point(0.0, 1.0, -1.0), Tuple::vector(0.0, -2_f64.sqrt() / 2.0, 2_f64.sqrt() / 2.0));
+        let i = Intersection::new(2_f64.sqrt(), shape.clone());
+        let comps = i.prepare_computations(&r, &vec![]);
+        assert_eq!(comps.reflectv, Tuple::vector(0.0, 2_f64.sqrt() / 2.0, 2_f64.sqrt() / 2.0));
+    }
+
+    #[test]
+    fn finding_n1_and_n2_at_various_intersections() {
+        let mut a = glass_sphere()
+            .with_transform(Matrix::scaling(2.0, 2.0, 2.0));
+        a.set_material(a.get_material().clone().with_refractive_index(1.5));
+
+        let mut b = glass_sphere()
+            .with_transform(Matrix::translation(0.0, 0.0, -0.25));
+        b.set_material(b.get_material().clone().with_refractive_index(2.0));
+
+        let mut c = glass_sphere()
+            .with_transform(Matrix::translation(0.0, 0.0, 0.25));
+        c.set_material(c.get_material().clone().with_refractive_index(2.5));
+
+        let r = Ray::new(Tuple::point(0.0, 0.0, -4.0), Tuple::vector(0.0, 0.0, 1.0));
+        let xs = vec![
+            Intersection::new(2.0, a.clone()),
+            Intersection::new(2.75, b.clone()),
+            Intersection::new(3.25, c.clone()),
+            Intersection::new(4.75, b.clone()),
+            Intersection::new(5.25, c.clone()),
+            Intersection::new(6.0, a.clone()),
+        ];
+
+        let mut comps = xs[0].prepare_computations(&r, &xs);
+        assert_eq!(comps.n1, 1.0);
+        assert_eq!(comps.n2, 1.5);
+
+        comps = xs[1].prepare_computations(&r, &xs);
+        assert_eq!(comps.n1, 1.5);
+        assert_eq!(comps.n2, 2.0);
+
+        comps = xs[2].prepare_computations(&r, &xs);
+        assert_eq!(comps.n1, 2.0);
+        assert_eq!(comps.n2, 2.5);
+
+        comps = xs[3].prepare_computations(&r, &xs);
+        assert_eq!(comps.n1, 2.5);
+        assert_eq!(comps.n2, 2.5);
+
+        comps = xs[4].prepare_computations(&r, &xs);
+        assert_eq!(comps.n1, 2.5);
+        assert_eq!(comps.n2, 1.5);
+
+        comps = xs[5].prepare_computations(&r, &xs);
+        assert_eq!(comps.n1, 1.5);
+        assert_eq!(comps.n2, 1.0);
+    }
+
+    #[test]
+    fn the_under_point_is_offset_below_the_surface() {
+        let r = Ray::new(Tuple::point(0.0, 0.0, -5.0), Tuple::vector(0.0, 0.0, 1.0));
+        let shape = glass_sphere().with_transform(Matrix::translation(0.0, 0.0, 1.0));
+        let i = Intersection::new(5.0, shape.clone());
+        let xs = vec![i.clone()];
+        let comps = i.prepare_computations(&r, &xs);
+        assert!(comps.under_point.2 > std::f64::EPSILON / 2.0);
+        assert!(comps.point.2 < comps.under_point.2);
+    }
+
+    #[test]
+    fn the_schlick_approximation_under_total_internal_reflection() {
+        let shape = glass_sphere();
+        let r = Ray::new(Tuple::point(0.0, 0.0, 2_f64.sqrt() / 2.0), Tuple::vector(0.0, 1.0, 0.0));
+        let xs = vec![
+            Intersection::new(-2_f64.sqrt() / 2.0, shape.clone()),
+            Intersection::new(2_f64.sqrt() / 2.0, shape.clone()),
+        ];
+        let comps = xs[1].prepare_computations(&r, &xs);
+        let reflectance = comps.schlick;
+        assert_eq!(reflectance, 1.0);
+    }
+
+    #[test]
+    fn the_schlick_approximation_with_a_perpendicular_viewing_angle() {
+        let shape = glass_sphere();
+        let r = Ray::new(Tuple::point(0.0, 0.0, 0.0), Tuple::vector(0.0, 1.0, 0.0));
+        let xs = vec![
+            Intersection::new(-1.0, shape.clone()),
+            Intersection::new(1.0, shape.clone()),
+        ];
+        let comps = xs[1].prepare_computations(&r, &xs);
+        let reflectance = comps.schlick;
+        let alpha = 1e-4;
+        assert!((reflectance - 0.04).abs() < alpha);
+    }
+
+    #[test]
+    fn the_schlick_approximation_with_small_angle_and_n2_greater_than_n1() {
+        let shape = glass_sphere();
+        let r = Ray::new(Tuple::point(0.0, 0.99, -2.0), Tuple::vector(0.0, 0.0, 1.0));
+        let xs = vec![
+            Intersection::new(1.8589, shape.clone()),
+        ];
+        let comps = xs[0].prepare_computations(&r, &xs);
+        let reflectance = comps.schlick;
+        let alpha = 1e-4;
+        assert!((reflectance - 0.48873).abs() < alpha);
+    }
 }
