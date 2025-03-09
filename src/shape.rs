@@ -1,4 +1,5 @@
 use crate::ray::Ray;
+use crate::shapes::cone::Cone;
 use crate::shapes::cube::Cube;
 use crate::shapes::cylinder::Cylinder;
 use crate::shapes::plane::Plane;
@@ -13,6 +14,7 @@ pub enum Shape {
     Plane(Plane),
     Cube(Cube),
     Cylinder(Cylinder),
+    Cone(Cone),
 }
 
 impl Shape {
@@ -23,6 +25,7 @@ impl Shape {
             Shape::Plane(s) => s.local_intersect(&local_ray),
             Shape::Cube(s) => s.local_intersect(&local_ray),
             Shape::Cylinder(s) => s.local_intersect(&local_ray),
+            Shape::Cone(s) => s.local_intersect(&local_ray),
         }
     }
 
@@ -33,6 +36,7 @@ impl Shape {
             Shape::Plane(s) => s.local_normal_at(),
             Shape::Cube(s) => s.local_normal_at(&local_point),
             Shape::Cylinder(s) => s.local_normal_at(&local_point),
+            Shape::Cone(s) => s.local_normal_at(&local_point),
         }
     }
 }
