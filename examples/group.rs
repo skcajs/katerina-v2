@@ -21,7 +21,7 @@ fn main() {
         
 
 
-    let middle = Object::sphere()
+    let mut middle = Object::sphere()
         .with_transform(Matrix::translation(-0.5, 1., 0.5))
         .with_material(Material::new()
             .with_color(Tuple::color(0.1, 1.0, 0.5))
@@ -31,9 +31,7 @@ fn main() {
 
     let light = Light::new(Tuple::point(-10.0, 15.5, -15.0), Tuple::color(1.0, 1.0, 1.0));
     
-    if let Some(g) = group.as_group() {
-        g.add_child(middle);
-    }
+    group.add_child(&mut middle);
 
 
     let world = World::new()

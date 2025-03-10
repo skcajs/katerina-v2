@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use crate::{intersection::Intersection, material::Material, matrix::Matrix, ray::Ray, shape::Shape, shapes::{cone::Cone, cube::Cube, cylinder::Cylinder, group::Group, plane::Plane, sphere::Sphere, test_shape::TestShape}, tuple::{Point, Vector}};
 
 #[derive(Clone, PartialEq, Debug)]
@@ -5,7 +7,7 @@ pub struct Object {
     pub shape: Shape,
     pub transform: Matrix,
     pub material: Material,
-    pub parent: Option<Box<Object>>,
+    pub parent: Option<Arc<Object>>
 }
 
 impl Object {
@@ -95,6 +97,36 @@ impl Object {
             self.transform.inverse() * point
         } else {
             self.transform.inverse() * *world_point
+        }
+    }
+
+    pub fn normal_to_world(&self, object_normal: &Vector) -> Vector {
+        let mut world_normal = self.transform.inverse().transpose() * *object_normal;
+        
+        world_normal.3 = 0.0;
+        
+        world_normal = world_normal.normalize();
+    
+        if let Some(parent) = &self.parent {
+            world_normal = parent.normal_to_world(&world_normal);
+        }
+    
+        world_normal
+    }
+
+    pub fn add_child(&mut self, child: &mut Object) {
+        let parent_clone = Arc::new(self.clone());
+        if let Shape::Group(ref mut group) = self.shape {
+            child.parent = Some(parent_clone);
+            group.children.push(child.clone());
+        }
+    }
+
+    pub fn get_children(&self) -> Option<&Vec<Object>> {
+        if let Shape::Group(ref group) = self.shape {
+            Some(&group.children)
+        } else {
+            None
         }
     }
 
@@ -201,10 +233,48 @@ mod tests {
         g1.set_transform(Matrix::rotation_y(std::f64::consts::PI / 2.0));
         let mut g2 = Object::group();
         g2.set_transform(Matrix::scaling(2.0, 2.0, 2.0));
-        g1.as_group().unwrap().add_child(g2.clone());
-        let s = Object::sphere().with_transform(Matrix::translation(5.0, 0.0, 0.0));
-        g2.as_group().unwrap().add_child(s.clone());
+        g1.add_child(&mut g2);
+        let mut s = Object::sphere().with_transform(Matrix::translation(5.0, 0.0, 0.0));
+        g2.add_child(&mut s);
         let p = s.world_to_object(&Tuple::point(-2.0, 0.0, -10.0));
-        assert_eq!(p, Tuple::point(0.0, 0.0, -1.0));
+        let delta = 1e-5;
+        assert!((p.0 - 0.0).abs() < delta);
+        assert!((p.1 - 0.0).abs() < delta);
+        assert!((p.2 + 1.0).abs() < delta);
+    }
+
+    #[test]
+    fn converting_a_normal_from_object_to_world_space() {
+        let mut g1 = Object::group();
+        g1.set_transform(Matrix::rotation_y(std::f64::consts::PI / 2.0));
+        let mut g2 = Object::group();
+        g2.set_transform(Matrix::scaling(1.0, 2.0, 3.0));
+        g1.add_child(&mut g2);
+        let mut s = Object::sphere().with_transform(Matrix::translation(5.0, 0.0, 0.0));
+        g2.add_child(&mut s);
+        let n = s.normal_to_world(&Tuple::vector(
+            (3.0_f64).sqrt() / 3.0,
+            (3.0_f64).sqrt() / 3.0,
+            (3.0_f64).sqrt() / 3.0,
+        ));
+        let delta = 1e-4;
+        assert!((n.0 - 0.28571).abs() < delta);
+        assert!((n.1 - 0.42857).abs() < delta);
+        assert!((n.2 + 0.85714).abs() < delta);
+    }
+
+    #[test]
+    fn just_a_quick_test() {
+        let mut g1 = Object::group();
+        g1.set_transform(Matrix::rotation_y(std::f64::consts::PI / 2.0));
+        let mut g2 = Object::group();
+        g2.set_transform(Matrix::scaling(1.0, 2.0, 3.0));
+        g1.add_child(&mut g2);
+        println!("{:?}", g1.get_transform());
+        println!("");
+        g1.set_transform(&Matrix::translation(5.,5.,3.) * g1.get_transform());
+        println!("{:?}", g1.get_transform());
+        println!("");
+        println!("{:?}", g2.parent.as_ref().unwrap().get_transform());
     }
 }
