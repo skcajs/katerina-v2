@@ -42,35 +42,37 @@ mod tests {
 
     #[test]
     fn adding_a_child_to_a_group() {
-        let mut g = Object::group();
+        let g = Object::group();
         let mut s = Object::test_shape();
-        g.add_child(&mut s);
-        assert_eq!(g.get_children().unwrap().len(), 1);
-        assert_eq!(g.get_children().unwrap()[0], s);
+        g.lock().unwrap().add_child(&mut s, &g);
+        assert_eq!(g.lock().unwrap().get_children().unwrap().len(), 1);
+        assert_eq!(g.lock().unwrap().get_children().unwrap()[0], s);
     }
 
     #[test]
     fn intersecting_a_ray_with_an_empty_group() {
         let g = Object::group();
         let r = Ray::new(Tuple::point(0.0, 0.0, 0.0), Tuple::vector(0.0, 0.0, 1.0));
-        let xs = g.intersect( &r);
+        let binding = g.lock().unwrap();
+        let xs = binding.intersect( &r);
         assert_eq!(xs.len(), 0);
     }
 
     #[test]
     fn intersecting_a_ray_with_a_nonempty_group() {
-        let mut g = Object::group();
+        let g = Object::group();
         let mut s1 = Object::sphere();
         let mut s2 = Object::sphere().with_transform(Matrix::translation(0.,0.,-3.));
         let mut s3 = Object::sphere().with_transform(Matrix::translation(5.0, 0.0, 0.0));
 
-        g.add_child(&mut s1);
-        g.add_child(&mut s2);
-        g.add_child(&mut s3);
+        g.lock().unwrap().add_child(&mut s1, &g);
+        g.lock().unwrap().add_child(&mut s2, &g);
+        g.lock().unwrap().add_child(&mut s3, &g);
         
 
         let r = Ray::new(Tuple::point(0.0, 0.0, -5.0), Tuple::vector(0.0, 0.0, 1.0));
-        let xs = g.intersect(&r);
+        let binding = g.lock().unwrap();
+        let xs = binding.intersect(&r);
         assert_eq!(xs.len(), 4);
         assert_eq!(xs[0].object, &s2);
         assert_eq!(xs[1].object, &s2);
@@ -81,13 +83,14 @@ mod tests {
 
     #[test]
     fn intersecting_a_transformed_group() {
-        let mut g = Object::group()
-            .with_transform(Matrix::scaling(2.0, 2.0, 2.0));
+        let g = Object::group();
+        g.lock().unwrap().set_transform(Matrix::scaling(2.0, 2.0, 2.0));
         let mut s = Object::sphere().with_transform(Matrix::translation(5.0, 0.0, 0.0));
 
-        g.add_child(&mut s);
+        g.lock().unwrap().add_child(&mut s, &g);
         let r = Ray::new(Tuple::point(10.0, 0.0, -10.0), Tuple::vector(0.0, 0.0, 1.0));
-        let xs = g.intersect(&r);
+        let binding = g.lock().unwrap();
+        let xs = binding.intersect(&r);
         assert_eq!(xs.len(), 2);
         
     }

@@ -9,8 +9,8 @@ use katerina::transformation::Transformation;
 
 fn main() {
 
-    let mut group = Object::group()
-        .with_transform(Matrix::translation(0.0, 1.0, 0.0));
+    let group = Object::group();
+    group.lock().unwrap().set_transform(Matrix::translation(0.0, 1.0, 0.0));
 
     let floor = Object::sphere()
         .with_transform(Matrix::scaling(10.0, 0.01, 10.0))
@@ -31,11 +31,11 @@ fn main() {
 
     let light = Light::new(Tuple::point(-10.0, 15.5, -15.0), Tuple::color(1.0, 1.0, 1.0));
     
-    group.add_child(&mut middle);
+    group.lock().unwrap().add_child(&mut middle, &group);
 
 
     let world = World::new()
-        .with_objects(vec![floor, group])
+        .with_objects(vec![floor, group.lock().unwrap().clone()])
         .with_lights(vec![light]);
 
     let camera = Camera::new(800, 400, std::f64::consts::PI / 3.0).with_transform(

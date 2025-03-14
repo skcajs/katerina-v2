@@ -1,13 +1,22 @@
-use std::sync::Arc;
+use std::sync::{Arc, Mutex, Weak};
 
 use crate::{intersection::Intersection, material::Material, matrix::Matrix, ray::Ray, shape::Shape, shapes::{cone::Cone, cube::Cube, cylinder::Cylinder, group::Group, plane::Plane, sphere::Sphere, test_shape::TestShape}, tuple::{Point, Vector}};
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, Debug)]
 pub struct Object {
     pub shape: Shape,
     pub transform: Matrix,
     pub material: Material,
-    pub parent: Option<Arc<Object>>
+    pub parent: Option<Weak<Mutex<Object>>>
+}
+
+impl PartialEq for Object {
+    fn eq(&self, other: &Self) -> bool {
+        self.shape == other.shape &&
+        self.transform == other.transform &&
+        self.material == other.material &&
+        Weak::ptr_eq(&self.parent.as_ref().map(Weak::clone).unwrap_or_default(), &other.parent.as_ref().map(Weak::clone).unwrap_or_default())
+    }
 }
 
 impl Object {
@@ -39,8 +48,9 @@ impl Object {
         Object::new(Shape::Cone(Cone::new()))
     }
 
-    pub fn group() -> Object {
-        Object::new(Shape::Group(Group::new()))
+    pub fn group() -> Arc<Mutex<Object>> {
+        Arc::new(Mutex::new(Object::new(Shape::Group(Group::new())))
+        )
     }
 
     pub fn as_group(&mut self) -> Option<&mut Group> {
@@ -93,7 +103,7 @@ impl Object {
 
     pub fn world_to_object(&self, world_point: &Point) -> Point {
         if let Some(parent) = &self.parent {
-            let point = parent.world_to_object(world_point);
+            let point = parent.upgrade().unwrap().lock().unwrap().world_to_object(world_point);
             self.transform.inverse() * point
         } else {
             self.transform.inverse() * *world_point
@@ -108,16 +118,15 @@ impl Object {
         world_normal = world_normal.normalize();
     
         if let Some(parent) = &self.parent {
-            world_normal = parent.normal_to_world(&world_normal);
+            world_normal = parent.upgrade().unwrap().lock().unwrap().normal_to_world(&world_normal);
         }
     
         world_normal
     }
 
-    pub fn add_child(&mut self, child: &mut Object) {
-        let parent_clone = Arc::new(self.clone());
+    pub fn add_child(&mut self, child: &mut Object, self_ref: &Arc<Mutex<Object>>) {
         if let Shape::Group(ref mut group) = self.shape {
-            child.parent = Some(parent_clone);
+            child.parent = Some(Arc::downgrade(self_ref));
             group.children.push(child.clone());
         }
     }
@@ -229,13 +238,13 @@ mod tests {
 
     #[test]
     fn converting_a_point_from_world_to_object_space() {
-        let mut g1 = Object::group();
-        g1.set_transform(Matrix::rotation_y(std::f64::consts::PI / 2.0));
-        let mut g2 = Object::group();
-        g2.set_transform(Matrix::scaling(2.0, 2.0, 2.0));
-        g1.add_child(&mut g2);
+        let g1 = Object::group();
+        g1.lock().unwrap().set_transform(Matrix::rotation_y(std::f64::consts::PI / 2.0));
+        let g2 = Object::group();
+        g2.lock().unwrap().set_transform(Matrix::scaling(2.0, 2.0, 2.0));
+        g1.lock().unwrap().add_child(&mut g2.lock().unwrap(), &g1);
         let mut s = Object::sphere().with_transform(Matrix::translation(5.0, 0.0, 0.0));
-        g2.add_child(&mut s);
+        g2.lock().unwrap().add_child(&mut s, &g2);
         let p = s.world_to_object(&Tuple::point(-2.0, 0.0, -10.0));
         let delta = 1e-5;
         assert!((p.0 - 0.0).abs() < delta);
@@ -245,13 +254,13 @@ mod tests {
 
     #[test]
     fn converting_a_normal_from_object_to_world_space() {
-        let mut g1 = Object::group();
-        g1.set_transform(Matrix::rotation_y(std::f64::consts::PI / 2.0));
-        let mut g2 = Object::group();
-        g2.set_transform(Matrix::scaling(1.0, 2.0, 3.0));
-        g1.add_child(&mut g2);
+        let g1 = Object::group();
+        g1.lock().unwrap().set_transform(Matrix::rotation_y(std::f64::consts::PI / 2.0));
+        let g2 = Object::group();
+        g2.lock().unwrap().set_transform(Matrix::scaling(1.0, 2.0, 3.0));
+        g1.lock().unwrap().add_child(&mut g2.lock().unwrap(), &g1);
         let mut s = Object::sphere().with_transform(Matrix::translation(5.0, 0.0, 0.0));
-        g2.add_child(&mut s);
+        g2.lock().unwrap().add_child(&mut s, &g2);
         let n = s.normal_to_world(&Tuple::vector(
             (3.0_f64).sqrt() / 3.0,
             (3.0_f64).sqrt() / 3.0,
@@ -265,16 +274,23 @@ mod tests {
 
     #[test]
     fn just_a_quick_test() {
-        let mut g1 = Object::group();
-        g1.set_transform(Matrix::rotation_y(std::f64::consts::PI / 2.0));
-        let mut g2 = Object::group();
-        g2.set_transform(Matrix::scaling(1.0, 2.0, 3.0));
-        g1.add_child(&mut g2);
-        println!("{:?}", g1.get_transform());
+        let g1 = Object::group();
+        g1.lock().unwrap().set_transform(Matrix::rotation_y(std::f64::consts::PI / 2.0));
+        let g2 = Object::group();
+        g2.lock().unwrap().set_transform(Matrix::scaling(1.0, 2.0, 3.0));
+        g1.lock().unwrap().add_child(&mut g2.lock().unwrap(), &g1);
+        println!("{:?}", g1.lock().unwrap().get_transform());
         println!("");
-        g1.set_transform(&Matrix::translation(5.,5.,3.) * g1.get_transform());
-        println!("{:?}", g1.get_transform());
+        let transform = {
+            let binding = g1.lock().unwrap();
+            binding.get_transform().clone()
+        };
+        
+        g1.lock().unwrap().set_transform(&Matrix::translation(5., 5., 3.) * &transform);
+        println!("{:?}", g1.lock().unwrap().get_transform());
         println!("");
-        println!("{:?}", g2.parent.as_ref().unwrap().get_transform());
+        if let Some(parent) = g2.lock().unwrap().parent.as_ref().unwrap().upgrade() {
+            println!("{:?}", parent.lock().unwrap().get_transform());
+        }
     }
 }
