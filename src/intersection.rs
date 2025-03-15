@@ -28,7 +28,7 @@ impl Intersection {
 
     pub fn prepare_computations(&self, ray: &Ray, xs: &Vec<Intersection>) -> Record {
         let store = ObjectStore::get_object_store();
-        if let Some(object) = store.get(self.object_key) {
+        if let Some(_object) = store.get(self.object_key) {
             let mut n1 = 1.0;
             let mut n2 = 1.0;
             let mut containers: Vec<ObjectKey> = vec![];

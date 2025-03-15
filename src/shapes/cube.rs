@@ -1,4 +1,4 @@
-use crate::{intersection::Intersection, keys::ObjectKey, object::Object, ray::Ray, tuple::Tuple};
+use crate::{intersection::Intersection, keys::ObjectKey, ray::Ray, tuple::Tuple};
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Cube;

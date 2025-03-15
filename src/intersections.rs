@@ -17,7 +17,6 @@ mod tests {
     use crate::{
         helper::glass_sphere,
         matrix::Matrix,
-        object::{self, Object},
         object_store::ObjectStore,
         ray::Ray,
         transformation::Transformation,

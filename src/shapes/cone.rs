@@ -1,5 +1,5 @@
 use crate::{
-    intersection::Intersection, keys::ObjectKey, object::Object, object_store::ObjectStore,
+    intersection::Intersection, keys::ObjectKey,
     ray::Ray, tuple::Tuple,
 };
 
@@ -98,7 +98,7 @@ impl Cone {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ray::Ray;
+    use crate::{object_store::ObjectStore, ray::Ray};
 
     #[test]
     fn intersecting_cone_with_ray() {

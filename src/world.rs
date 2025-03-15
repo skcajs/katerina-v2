@@ -6,7 +6,7 @@ use crate::{
     light::Light,
     material::Material,
     matrix::Matrix,
-    object::{self, Object},
+    object::Object,
     object_store::ObjectStore,
     ray::Ray,
     transformation::Transformation,

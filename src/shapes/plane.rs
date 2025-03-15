@@ -1,4 +1,4 @@
-use crate::{intersection::Intersection, keys::ObjectKey, object::Object, ray::Ray, tuple::Tuple};
+use crate::{intersection::Intersection, keys::ObjectKey, ray::Ray, tuple::Tuple};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Plane;
@@ -28,7 +28,7 @@ mod tests {
     use super::*;
 
     use crate::{
-        object::{self, Object},
+        object::Object,
         object_store::ObjectStore,
         ray::Ray,
     };

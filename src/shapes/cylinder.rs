@@ -1,4 +1,4 @@
-use crate::{intersection::Intersection, keys::ObjectKey, object::Object, ray::Ray, tuple::Tuple};
+use crate::{intersection::Intersection, keys::ObjectKey, ray::Ray, tuple::Tuple};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Cylinder {
@@ -84,7 +84,7 @@ impl Cylinder {
 mod tests {
     use super::*;
 
-    use crate::{object_store::ObjectStore, ray::Ray, shape::Shape};
+    use crate::{object::Object, object_store::ObjectStore, ray::Ray, shape::Shape};
 
     #[test]
     fn a_ray_misses_a_cylinder() {
