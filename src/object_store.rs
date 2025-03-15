@@ -131,10 +131,9 @@ impl ObjectStore {
     }
 
     // pub fn get_object(key: ObjectKey) -> Option<ObjectGuard<'static>> {
-    //     let store = OBJECT_STORE.clone();
-    //     let guard = store.lock().unwrap();
-    //     if guard.objects.lock().unwrap().contains_key(key) {
-    //         Some(ObjectGuard { guard: guard.objects.lock().unwrap(), key })
+    //     let guard = OBJECT_STORE.lock().unwrap().objects;
+    //     if guard.lock().unwrap().contains_key(key) {
+    //         Some(ObjectGuard { guard: guard.lock().unwrap(), key })
     //     } else {
     //         None
     //     }
