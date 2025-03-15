@@ -11,7 +11,7 @@ impl TestShape {
         }
     }
 
-    pub fn local_intersect<'a>(&'a self) -> Vec<Intersection<'a>> {
+    pub fn local_intersect(&self) -> Vec<Intersection> {
         vec![]
     }
 

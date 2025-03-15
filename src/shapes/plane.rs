@@ -1,4 +1,4 @@
-use crate::{intersection::Intersection, object::Object, ray::Ray, tuple::Tuple};
+use crate::{intersection::Intersection, keys::ObjectKey, object::Object, ray::Ray, tuple::Tuple};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Plane;
@@ -8,13 +8,13 @@ impl Plane {
         Plane {}
     }
 
-    pub fn local_intersect<'a>(&self, object: &'a Object, ray: &Ray) -> Vec<Intersection<'a>> {
+    pub fn local_intersect(&self, object_key: ObjectKey, ray: &Ray) -> Vec<Intersection> {
         if ray.direction.1.abs() < 1e-5 {
             return vec![];
         }
 
         let t = -ray.origin.1 / ray.direction.1;
-        vec![Intersection::new(t, object)]
+        vec![Intersection::new(t, object_key)]
     }
 
     pub fn local_normal_at(&self) -> Tuple {

@@ -1,8 +1,11 @@
+use slotmap::{SlotMap};
+use crate::keys::ObjectKey;
 use crate::{intersection::Intersection, object::Object, ray::Ray};
+
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Group {  
-    pub children: Vec<Object>
+    pub children: Vec<ObjectKey>
 }
 
 impl Group {
@@ -14,7 +17,7 @@ impl Group {
 
     pub fn local_intersect(&self, ray: &Ray) -> Vec<Intersection> {
         let mut xs: Vec<Intersection> = vec![];
-        for child in &self.children {
+        for child_key in &self.children {
             let mut child_xs = child.intersect(ray);
             xs.append(&mut child_xs);
         }

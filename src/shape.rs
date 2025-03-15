@@ -1,4 +1,5 @@
 use crate::intersection::Intersection;
+use crate::keys::ObjectKey;
 use crate::object::Object;
 use crate::ray::Ray;
 use crate::shapes::cone::Cone;
@@ -22,14 +23,14 @@ pub enum Shape {
 }
 
 impl Shape {
-    pub fn local_intersect<'a>(&'a self, object: &'a Object, local_ray: & Ray) -> Vec<Intersection<'a>> {
+    pub fn local_intersect(&self, object_key: ObjectKey, local_ray: & Ray) -> Vec<Intersection> {
         match self {
             Shape::TestShape(s) => s.local_intersect(),
-            Shape::Sphere(s) => s.local_intersect(object, &local_ray),
-            Shape::Plane(s) => s.local_intersect(object, &local_ray),
-            Shape::Cube(s) => s.local_intersect(object, &local_ray),
-            Shape::Cylinder(s) => s.local_intersect(object, &local_ray),
-            Shape::Cone(s) => s.local_intersect(object, &local_ray),
+            Shape::Sphere(s) => s.local_intersect(object_key, &local_ray),
+            Shape::Plane(s) => s.local_intersect(object_key, &local_ray),
+            Shape::Cube(s) => s.local_intersect(object_key, &local_ray),
+            Shape::Cylinder(s) => s.local_intersect(object_key, &local_ray),
+            Shape::Cone(s) => s.local_intersect(object_key, &local_ray),
             Shape::Group(s) => s.local_intersect(&local_ray),
         }
     }

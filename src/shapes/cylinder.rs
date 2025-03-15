@@ -1,4 +1,4 @@
-use crate::{intersection::Intersection, object::Object, ray::Ray, tuple::Tuple};
+use crate::{intersection::Intersection, keys::ObjectKey, object::Object, ray::Ray, tuple::Tuple};
 
 
 #[derive(Debug, Clone, PartialEq)]
@@ -19,7 +19,7 @@ impl Cylinder {
         }
     }
 
-    pub fn local_intersect<'a>(&self, object: &'a Object, ray: &Ray) -> Vec<Intersection<'a>> {
+    pub fn local_intersect(&self, object_key: ObjectKey, ray: &Ray) -> Vec<Intersection> {
         let mut xs = vec![];
         let a = ray.direction.0.powi(2) + ray.direction.2.powi(2);
         if a.abs() > 1e-6 {
@@ -36,16 +36,16 @@ impl Cylinder {
 
                 let y0 = ray.origin.1 + t0 * ray.direction.1;
                 if self.minimum < y0 && y0 < self.maximum {
-                    xs.push(Intersection::new(t0, object));
+                    xs.push(Intersection::new(t0, object_key));
                 }
 
                 let y1 = ray.origin.1 + t1 * ray.direction.1;
                 if self.minimum < y1 && y1 < self.maximum {
-                    xs.push(Intersection::new(t1, object));
+                    xs.push(Intersection::new(t1, object_key));
                 }
             }
         }
-        self.intersect_caps(object, ray, &mut xs);
+        self.intersect_caps(object_key, ray, &mut xs);
         xs
     }
 
@@ -66,19 +66,19 @@ impl Cylinder {
         x.powi(2) + z.powi(2) <= 1.0
     }
 
-    pub fn intersect_caps<'a>(&self, object: &'a Object, ray: &Ray, xs: &mut Vec<Intersection<'a>>) {
+    pub fn intersect_caps(&self, object_key: ObjectKey, ray: &Ray, xs: &mut Vec<Intersection>) {
         if !self.closed || ray.direction.1.abs() < 1e-6 {
             return;
         }
 
         let t = (self.minimum - ray.origin.1) / ray.direction.1;
         if self.check_cap(ray, t) {
-            xs.push(Intersection::new(t, object));
+            xs.push(Intersection::new(t, object_key));
         }
 
         let t = (self.maximum - ray.origin.1) / ray.direction.1;
         if self.check_cap(ray, t) {
-            xs.push(Intersection::new(t, object));
+            xs.push(Intersection::new(t, object_key));
         }
     }
 }

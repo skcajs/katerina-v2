@@ -1,4 +1,4 @@
-use crate::{intersection::Intersection, object::Object, ray::Ray, tuple::Tuple};
+use crate::{intersection::Intersection, keys::ObjectKey, object::Object, ray::Ray, tuple::Tuple};
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Cube;
@@ -8,7 +8,7 @@ impl Cube {
         Cube
     }
 
-    pub fn local_intersect<'a>(&self, object: &'a Object, ray: &Ray) -> Vec<Intersection<'a>> {
+    pub fn local_intersect<'a>(&self, object_key: ObjectKey, ray: &Ray) -> Vec<Intersection> {
         let (xtmin, xtmax) = self.check_axis(ray.origin.0, ray.direction.0);
         let (ytmin, ytmax) = self.check_axis(ray.origin.1, ray.direction.1);
         let (ztmin, ztmax) = self.check_axis(ray.origin.2, ray.direction.2);
@@ -21,8 +21,8 @@ impl Cube {
         }
 
         vec![
-            Intersection::new(tmin, object), 
-            Intersection::new(tmax, object)
+            Intersection::new(tmin, object_key), 
+            Intersection::new(tmax, object_key)
             ]
     }
 

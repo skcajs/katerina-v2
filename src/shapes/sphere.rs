@@ -1,5 +1,5 @@
 use crate::intersection::Intersection;
-use crate::object::Object;
+use crate::keys::ObjectKey;
 use crate::tuple::Tuple;
 use crate::ray::Ray;
 
@@ -11,7 +11,7 @@ impl Sphere {
         Sphere {}
     }
 
-    pub fn local_intersect<'a>(&self, object: &'a Object, ray: &Ray) -> Vec<Intersection<'a>> {
+    pub fn local_intersect(&self, object_key: ObjectKey, ray: &Ray) -> Vec<Intersection> {
         let sphere_to_ray = ray.origin - Tuple::point(0.0, 0.0, 0.0);
         let a = ray.direction.dot(ray.direction);
         let b = 2.0 * ray.direction.dot(sphere_to_ray);
@@ -25,8 +25,8 @@ impl Sphere {
         let t1 = (-b - discriminant.sqrt()) / (2.0 * a);
         let t2 = (-b + discriminant.sqrt()) / (2.0 * a);
         vec![
-            Intersection::new(t1, object),
-            Intersection::new(t2, object)
+            Intersection::new(t1, object_key),
+            Intersection::new(t2, object_key)
         ]
     }
 

@@ -1,4 +1,4 @@
-use crate::{intersection::Intersection, object::Object, ray::Ray, tuple::Tuple};
+use crate::{intersection::Intersection, keys::ObjectKey, object::Object, object_store::ObjectStore, ray::Ray, tuple::Tuple};
 
 
 #[derive(Debug, Clone, PartialEq)]
@@ -17,7 +17,7 @@ impl Cone {
         }
     }
 
-    pub fn local_intersect<'a>(&self, object: &'a Object, ray: &Ray) -> Vec<Intersection<'a>> {
+    pub fn local_intersect(&self, object_key: ObjectKey, ray: &Ray) -> Vec<Intersection> {
         let a = ray.direction.0.powi(2) - ray.direction.1.powi(2) + ray.direction.2.powi(2);
         let b = 2.0 * ray.origin.0 * ray.direction.0 - 2.0 * ray.origin.1 * ray.direction.1 + 2.0 * ray.origin.2 * ray.direction.2;
         let c = ray.origin.0.powi(2) - ray.origin.1.powi(2) + ray.origin.2.powi(2);
@@ -25,7 +25,7 @@ impl Cone {
         let mut xs = vec![];
 
         if a.abs() < 1e-6 && b.abs() > 1e-6 {
-            xs.push(Intersection::new(-c / (2.0 * b), object));
+            xs.push(Intersection::new(-c / (2.0 * b), object_key));
         } else if a.abs() >= 1e-6 {
             let disc = b.powi(2) - 4.0 * a * c;
             if disc < 0.0 {
@@ -41,16 +41,16 @@ impl Cone {
 
             let y0 = ray.origin.1 + t0 * ray.direction.1;
             if self.minimum < y0 && y0 < self.maximum {
-                xs.push(Intersection::new(t0, object));
+                xs.push(Intersection::new(t0, object_key));
             }
 
             let y1 = ray.origin.1 + t1 * ray.direction.1;
             if self.minimum < y1 && y1 < self.maximum {
-                xs.push(Intersection::new(t1, object));
+                xs.push(Intersection::new(t1, object_key));
             }
         }
 
-        self.intersect_caps(object, ray, &mut xs);
+        self.intersect_caps(object_key, ray, &mut xs);
         xs
     }
 
@@ -75,19 +75,19 @@ impl Cone {
         x.powi(2) + z.powi(2) <= r.abs()
     }
 
-    pub fn intersect_caps<'a>(&self, object: &'a Object, ray: &Ray, xs: &mut Vec<Intersection<'a>>) {
+    pub fn intersect_caps(&self, object_key: ObjectKey, ray: &Ray, xs: &mut Vec<Intersection>) {
         if !self.closed || ray.direction.1.abs() < 1e-6 {
             return;
         }
 
         let t = (self.minimum - ray.origin.1) / ray.direction.1;
         if self.check_cap(ray, t, self.minimum) {
-            xs.push(Intersection::new(t, object));
+            xs.push(Intersection::new(t, object_key));
         }
 
         let t = (self.maximum - ray.origin.1) / ray.direction.1;
         if self.check_cap(ray, t, self.maximum) {
-            xs.push(Intersection::new(t, object));
+            xs.push(Intersection::new(t, object_key));
         }
     }
 }

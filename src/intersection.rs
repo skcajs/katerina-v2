@@ -1,8 +1,8 @@
-use crate::{object::Object, ray::Ray, tuple::Tuple};
+use crate::{keys::ObjectKey, object::Object, object_store::ObjectStore, ray::Ray, tuple::Tuple};
 
-pub struct Record<'a> {
+pub struct Record {
     pub t: f64,
-    pub object: &'a Object,
+    pub object_key: ObjectKey,
     pub point: Tuple,
     pub eyev: Tuple,
     pub normalv: Tuple,
@@ -16,20 +16,24 @@ pub struct Record<'a> {
 }
 
 #[derive(Clone, PartialEq, Debug)]
-pub struct Intersection<'a> {
+pub struct Intersection {
     pub t: f64,
-    pub object: &'a Object,
+    pub object_key: ObjectKey,
 }
 
-impl<'a> Intersection<'a> {
-    pub fn new(t: f64, object: &'a Object) -> Intersection<'a> {
-        Intersection { t, object }
+impl Intersection {
+    pub fn new(t: f64, object_key: ObjectKey) -> Intersection {
+        Intersection { t, object_key }
     }
 
     pub fn prepare_computations(&self, ray: &Ray, xs: &Vec<Intersection>) -> Record {
         let mut n1 = 1.0;
         let mut n2 = 1.0;
         let mut containers: Vec<Object> = vec![];
+
+        let store = ObjectStore::get_object_store();
+
+        let object = store.get(self.object_key).unwrap();
 
         for i in xs {
             if i == self {
@@ -40,7 +44,7 @@ impl<'a> Intersection<'a> {
                 }
             }
 
-            if containers.contains(&i.object) {
+            if containers.contains(&i.object_key) {
                 containers.retain(|x| x != i.object);
             } else {
                 containers.push(i.object.clone());
@@ -68,7 +72,7 @@ impl<'a> Intersection<'a> {
 
         Record {
             t: self.t,
-            object: self.object,
+            object_key: self.object_key,
             point,
             eyev,
             normalv,
