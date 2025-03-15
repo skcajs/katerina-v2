@@ -1,4 +1,4 @@
-use crate::{keys::ObjectKey, object::Object, object_store::ObjectStore, ray::Ray, tuple::Tuple};
+use crate::{keys::ObjectKey, object_store::ObjectStore, ray::Ray, tuple::Tuple};
 
 pub struct Record {
     pub t: f64,
@@ -27,40 +27,49 @@ impl Intersection {
     }
 
     pub fn prepare_computations(&self, ray: &Ray, xs: &Vec<Intersection>) -> Record {
-
         let store = ObjectStore::get_object_store();
         if let Some(object) = store.get(self.object_key) {
-
             let mut n1 = 1.0;
             let mut n2 = 1.0;
             let mut containers: Vec<ObjectKey> = vec![];
-    
+
             for i in xs {
                 if i == self {
                     if containers.is_empty() {
                         n1 = 1.0;
                     } else {
-                        n1 = store.get(*containers.last().unwrap()).unwrap().get_material().refractive_index;
+                        n1 = store
+                            .get(*containers.last().unwrap())
+                            .unwrap()
+                            .get_material()
+                            .refractive_index;
                     }
                 }
-    
+
                 if containers.contains(&i.object_key) {
                     containers.retain(|x| *x != i.object_key);
                 } else {
                     containers.push(i.object_key);
                 }
-    
+
                 if i == self {
                     if containers.is_empty() {
                         n2 = 1.0;
                     } else {
-                        n2 = store.get(*containers.last().unwrap()).unwrap().get_material().refractive_index;
+                        n2 = store
+                            .get(*containers.last().unwrap())
+                            .unwrap()
+                            .get_material()
+                            .refractive_index;
                     }
                     break;
                 }
             }
-    
-            let mut normalv = store.get(self.object_key).unwrap().normal_at(&ray.position(self.t));
+
+            let mut normalv = store
+                .get(self.object_key)
+                .unwrap()
+                .normal_at(&ray.position(self.t));
             let eyev = -ray.direction;
             let inside = if normalv.dot(eyev) < 0.0 {
                 normalv = -normalv;
@@ -69,7 +78,7 @@ impl Intersection {
                 false
             };
             let point = ray.position(self.t);
-    
+
             Record {
                 t: self.t,
                 object_key: self.object_key,
@@ -99,14 +108,10 @@ impl Intersection {
                         let r0 = ((n1 - n2) / (n1 + n2)).powi(2);
                         r0 + (1.0 - r0) * (1.0 - cos).powi(5)
                     }
-                }
+                },
             }
-
         } else {
             panic!("Object not found in store");
         }
-
-
     }
-
 }

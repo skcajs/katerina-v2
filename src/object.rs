@@ -1,6 +1,17 @@
 use crate::{keys::ObjectKey, object_store::ObjectStore};
 
-use crate::{intersection::Intersection, material::Material, matrix::Matrix, ray::Ray, shape::Shape, shapes::{cone::Cone, cube::Cube, cylinder::Cylinder, group::Group, plane::Plane, sphere::Sphere, test_shape::TestShape}, tuple::{Point, Vector}};
+use crate::{
+    intersection::Intersection,
+    material::Material,
+    matrix::Matrix,
+    ray::Ray,
+    shape::Shape,
+    shapes::{
+        cone::Cone, cube::Cube, cylinder::Cylinder, group::Group, plane::Plane, sphere::Sphere,
+        test_shape::TestShape,
+    },
+    tuple::{Point, Vector},
+};
 
 #[derive(Clone, Debug)]
 pub struct Object {
@@ -59,7 +70,12 @@ impl Object {
     }
 
     pub fn intersect(&self, ray: &Ray) -> Vec<Intersection> {
-        self.shape.local_intersect(self, &ray.transform(&self.transform.inverse()))
+        if let Some(parent_key) = self.parent {
+            self.shape
+                .local_intersect(parent_key, &ray.transform(&self.transform.inverse()))
+        } else {
+            vec![]
+        }
     }
 
     pub fn normal_at(&self, world_point: &Point) -> Vector {
@@ -115,17 +131,17 @@ impl Object {
     pub fn normal_to_world(&self, object_normal: &Vector) -> Vector {
         let objects = ObjectStore::get_object_store();
         let mut world_normal = self.transform.inverse().transpose() * *object_normal;
-        
+
         world_normal.3 = 0.0;
-        
+
         world_normal = world_normal.normalize();
-    
+
         if let Some(parent_key) = self.parent {
             if let Some(parent) = objects.get(parent_key) {
                 world_normal = parent.normal_to_world(&world_normal);
             }
         }
-    
+
         world_normal
     }
 
@@ -138,15 +154,13 @@ impl Object {
         }
     }
 
-    pub fn get_children(&self) -> Option<&Vec<ObjectKey>> {
+    pub fn get_children(&self) -> &Vec<ObjectKey> {
         if let Shape::Group(ref group) = self.shape {
-            Some(&group.children)
+            &group.children
         } else {
-            None
+            panic!("Object is not a group");
         }
     }
-
-    
 }
 
 #[cfg(test)]
@@ -154,11 +168,11 @@ mod tests {
 
     use super::*;
 
-    use crate::ray::Ray;
-    use crate::tuple::Tuple;
     use crate::material::Material;
     use crate::matrix::Matrix;
+    use crate::ray::Ray;
     use crate::transformation::Transformation;
+    use crate::tuple::Tuple;
 
     #[test]
     fn default_transform() {
@@ -246,7 +260,11 @@ mod tests {
         if let Some(mut s) = objects.get(s_key) {
             let m = Matrix::scaling(1.0, 0.5, 1.0) * Matrix::rotation_z(std::f64::consts::PI / 5.0);
             s.set_transform(m);
-            let n = s.normal_at(&Tuple::point(0.0, 2.0_f64.sqrt() / 2.0, -2.0_f64.sqrt() / 2.0));
+            let n = s.normal_at(&Tuple::point(
+                0.0,
+                2.0_f64.sqrt() / 2.0,
+                -2.0_f64.sqrt() / 2.0,
+            ));
             let delta = 1e-5;
             assert!((n.0 - 0.0).abs() < delta);
             assert!((n.1 - 0.97014).abs() < delta);
@@ -306,13 +324,11 @@ mod tests {
         s.set_transform(Matrix::translation(5.0, 0.0, 0.0));
         g2.add_child(&mut s);
 
-        let n = s.normal_to_world(
-            &Tuple::vector(
+        let n = s.normal_to_world(&Tuple::vector(
             (3.0_f64).sqrt() / 3.0,
             (3.0_f64).sqrt() / 3.0,
             (3.0_f64).sqrt() / 3.0,
-            ),
-        );
+        ));
 
         let delta = 1e-4;
         assert!((n.0 - 0.28571).abs() < delta);
@@ -320,30 +336,30 @@ mod tests {
         assert!((n.2 + 0.85714).abs() < delta);
     }
 
-    #[test]
-    fn just_a_quick_test() {
-        let objects = ObjectStore::new();
-        let g1_key = objects.group();
-        if let Some(mut g1) = objects.get(g1_key) {
-            g1.set_transform(Matrix::rotation_y(std::f64::consts::PI / 2.0));
-            let g2_key = objects.group();
-            if let Some(mut g2) = objects.get(g2_key) {
-                g2.set_transform(Matrix::scaling(1.0, 2.0, 3.0));
-                g1.add_child(&mut g2);
-                println!("{:?}", g1.get_transform());
-                println!("");
+    // #[test]
+    // fn just_a_quick_test() {
+    //     let objects = ObjectStore::new();
+    //     let g1_key = objects.group();
+    //     if let Some(mut g1) = objects.get(g1_key) {
+    //         g1.set_transform(Matrix::rotation_y(std::f64::consts::PI / 2.0));
+    //         let g2_key = objects.group();
+    //         if let Some(mut g2) = objects.get(g2_key) {
+    //             g2.set_transform(Matrix::scaling(1.0, 2.0, 3.0));
+    //             g1.add_child(&mut g2);
+    //             println!("{:?}", g1.get_transform());
+    //             println!("");
 
-                let transform = g1.get_transform().clone();
+    //             let transform = g1.get_transform().clone();
 
-                g1.set_transform(Matrix::translation(5., 5., 3.) * transform);
-                println!("{:?}", g1.get_transform());
-                println!("");
-                if let Some(parent_key) = g2.parent {
-                    if let Some(parent) = objects.get(parent_key) {
-                        println!("{:?}", parent.get_transform());
-                    }
-                }
-            }
-        }
-    }
+    //             g1.set_transform(Matrix::translation(5., 5., 3.) * transform);
+    //             println!("{:?}", g1.get_transform());
+    //             println!("");
+    //             if let Some(parent_key) = g2.parent {
+    //                 if let Some(parent) = objects.get(parent_key) {
+    //                     println!("{:?}", parent.get_transform());
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 }

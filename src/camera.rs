@@ -1,5 +1,5 @@
-use std::time::Instant;
 use rayon::prelude::*;
+use std::time::Instant;
 
 use crate::{canvas::Canvas, matrix::Matrix, ray::Ray, tuple::Tuple, world::World};
 
@@ -62,13 +62,17 @@ impl Camera {
         let start = Instant::now();
 
         let mut image = Canvas::new(self.hsize, self.vsize);
-        image.pixels_mut().par_chunks_mut(self.hsize).enumerate().for_each(|(y, row)| {
-            for (x, pixel) in row.iter_mut().enumerate() {
-                let ray = self.ray_for_pixel(x, y);
-                let color = world.color_at(&ray, 4);
-                *pixel = color;
-            }
-        });
+        image
+            .pixels_mut()
+            .par_chunks_mut(self.hsize)
+            .enumerate()
+            .for_each(|(y, row)| {
+                for (x, pixel) in row.iter_mut().enumerate() {
+                    let ray = self.ray_for_pixel(x, y);
+                    let color = world.color_at(&ray, 4);
+                    *pixel = color;
+                }
+            });
 
         let duration = start.elapsed();
         println!("Render time: {:.2?}", duration);
@@ -79,8 +83,8 @@ impl Camera {
 
 #[cfg(test)]
 mod tests {
-    use crate::tuple::Tuple;
     use crate::transformation::Transformation;
+    use crate::tuple::Tuple;
     use crate::world::World;
 
     use super::*;
@@ -139,7 +143,8 @@ mod tests {
     #[test]
     fn constructing_a_ray_when_the_camera_is_transformed() {
         let mut c = Camera::new(201, 101, std::f64::consts::PI / 2.0);
-        c.transform = Matrix::rotation_y(std::f64::consts::PI / 4.0) * Matrix::translation(0.0, -2.0, 5.0);
+        c.transform =
+            Matrix::rotation_y(std::f64::consts::PI / 4.0) * Matrix::translation(0.0, -2.0, 5.0);
         let r = c.ray_for_pixel(100, 50);
         let delta = 1e-6;
         assert!((r.origin.0 - 0.0).abs() < delta);

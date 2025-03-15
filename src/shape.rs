@@ -1,6 +1,5 @@
 use crate::intersection::Intersection;
 use crate::keys::ObjectKey;
-use crate::object::Object;
 use crate::ray::Ray;
 use crate::shapes::cone::Cone;
 use crate::shapes::cube::Cube;
@@ -23,7 +22,7 @@ pub enum Shape {
 }
 
 impl Shape {
-    pub fn local_intersect(&self, object_key: ObjectKey, local_ray: & Ray) -> Vec<Intersection> {
+    pub fn local_intersect(&self, object_key: ObjectKey, local_ray: &Ray) -> Vec<Intersection> {
         match self {
             Shape::TestShape(s) => s.local_intersect(),
             Shape::Sphere(s) => s.local_intersect(object_key, &local_ray),

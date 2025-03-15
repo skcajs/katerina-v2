@@ -21,9 +21,9 @@ impl Cube {
         }
 
         vec![
-            Intersection::new(tmin, object_key), 
-            Intersection::new(tmax, object_key)
-            ]
+            Intersection::new(tmin, object_key),
+            Intersection::new(tmax, object_key),
+        ]
     }
 
     pub fn local_normal_at(&self, point: &Tuple) -> Tuple {
@@ -45,7 +45,10 @@ impl Cube {
         let (tmin, tmax) = if direction.abs() >= 1e-6 {
             (tmin_numerator / direction, tmax_numerator / direction)
         } else {
-            (tmin_numerator * f64::INFINITY, tmax_numerator * f64::INFINITY)
+            (
+                tmin_numerator * f64::INFINITY,
+                tmax_numerator * f64::INFINITY,
+            )
         };
 
         if tmin > tmax {
@@ -59,16 +62,16 @@ impl Cube {
 #[cfg(test)]
 mod tests {
 
-    use crate::{ray::Ray, tuple::Tuple};
     use super::*;
-
+    use crate::{object_store::ObjectStore, ray::Ray, tuple::Tuple};
 
     #[test]
     fn a_ray_intersects_a_cube() {
-        let object =  Object::test_shape();
+        let objects = ObjectStore::get_object_store();
+        let object = objects.cube();
         let c = Cube::new();
         let r = Ray::new(Tuple::point(5.0, 0.5, 0.0), Tuple::vector(-1.0, 0.0, 0.0));
-        let xs = c.local_intersect(&object, &r);
+        let xs = c.local_intersect(object, &r);
         assert_eq!(xs.len(), 2);
         assert_eq!(xs[0].t, 4.0);
         assert_eq!(xs[1].t, 6.0);
@@ -76,10 +79,14 @@ mod tests {
 
     #[test]
     fn a_ray_misses_a_cube() {
-        let object =  Object::test_shape();
+        let objects = ObjectStore::get_object_store();
+        let object = objects.cube();
         let c = Cube::new();
-        let r = Ray::new(Tuple::point(-2.0, 0.0, 0.0), Tuple::vector(0.2673, 0.5345, 0.8018));
-        let xs = c.local_intersect(&object, &r);
+        let r = Ray::new(
+            Tuple::point(-2.0, 0.0, 0.0),
+            Tuple::vector(0.2673, 0.5345, 0.8018),
+        );
+        let xs = c.local_intersect(object, &r);
         assert_eq!(xs.len(), 0);
     }
 

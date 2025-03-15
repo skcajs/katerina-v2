@@ -1,7 +1,7 @@
 use crate::intersection::Intersection;
 use crate::keys::ObjectKey;
-use crate::tuple::Tuple;
 use crate::ray::Ray;
+use crate::tuple::Tuple;
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Sphere;
@@ -26,7 +26,7 @@ impl Sphere {
         let t2 = (-b + discriminant.sqrt()) / (2.0 * a);
         vec![
             Intersection::new(t1, object_key),
-            Intersection::new(t2, object_key)
+            Intersection::new(t2, object_key),
         ]
     }
 
@@ -39,14 +39,18 @@ impl Sphere {
 mod tests {
     use super::*;
 
-    use crate::{helper::glass_sphere, matrix::Matrix, object::Object, transformation::Transformation};
+    use crate::{
+        helper::glass_sphere, matrix::Matrix, object::Object, object_store::ObjectStore,
+        transformation::Transformation,
+    };
 
     #[test]
     fn a_ray_intersects_a_sphere_at_two_points() {
-        let object = Object::test_shape();
+        let objects = ObjectStore::get_object_store();
+        let object_key = objects.test_shape();
         let r = Ray::new(Tuple::point(0.0, 0.0, -5.0), Tuple::vector(0.0, 0.0, 1.0));
         let s = Sphere::new();
-        let xs = s.local_intersect(&object, &r);
+        let xs = s.local_intersect(object_key, &r);
         assert_eq!(xs.len(), 2);
         assert_eq!(xs[0].t, 4.0);
         assert_eq!(xs[1].t, 6.0);
@@ -54,19 +58,21 @@ mod tests {
 
     #[test]
     fn a_ray_misses_a_sphere() {
-        let object = Object::test_shape();
+        let objects = ObjectStore::get_object_store();
+        let object_key = objects.test_shape();
         let r = Ray::new(Tuple::point(0.0, 0.0, -5.0), Tuple::vector(0.0, 1.0, 0.0));
         let s = Sphere::new();
-        let xs = s.local_intersect(&object, &r);
+        let xs = s.local_intersect(object_key, &r);
         assert_eq!(xs.len(), 0);
     }
 
     #[test]
     fn a_ray_originates_inside_a_sphere() {
-        let object = Object::test_shape();
+        let objects = ObjectStore::get_object_store();
+        let object_key = objects.test_shape();
         let r = Ray::new(Tuple::point(0.0, 0.0, 0.0), Tuple::vector(0.0, 0.0, 1.0));
         let s = Sphere::new();
-        let xs = s.local_intersect(&object, &r);
+        let xs = s.local_intersect(object_key, &r);
         assert_eq!(xs.len(), 2);
         assert_eq!(xs[0].t, -1.0);
         assert_eq!(xs[1].t, 1.0);
@@ -74,10 +80,11 @@ mod tests {
 
     #[test]
     fn a_sphere_is_behind_a_ray() {
-        let object = Object::test_shape();
+        let objects = ObjectStore::get_object_store();
+        let object_key = objects.test_shape();
         let r: Ray = Ray::new(Tuple::point(0.0, 0.0, 5.0), Tuple::vector(0.0, 0.0, 1.0));
         let s = Sphere::new();
-        let xs = s.local_intersect(&object, &r);
+        let xs = s.local_intersect(object_key, &r);
         assert_eq!(xs.len(), 2);
         assert_eq!(xs[0].t, -6.0);
         assert_eq!(xs[1].t, -4.0);
@@ -119,7 +126,11 @@ mod tests {
         let mut s = Object::sphere();
         let m = Matrix::scaling(1.0, 0.5, 1.0) * Matrix::rotation_z(std::f64::consts::PI / 5.0);
         s.set_transform(m);
-        let n = s.normal_at(&Tuple::point(0.0, 2.0_f64.sqrt() / 2.0, -2.0_f64.sqrt() / 2.0));
+        let n = s.normal_at(&Tuple::point(
+            0.0,
+            2.0_f64.sqrt() / 2.0,
+            -2.0_f64.sqrt() / 2.0,
+        ));
         let delta = 1e-5;
         assert!((n.0 - 0.0).abs() < delta);
         assert!((n.1 - 0.97014).abs() < delta);

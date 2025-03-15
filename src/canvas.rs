@@ -9,7 +9,11 @@ pub struct Canvas {
 impl Canvas {
     pub fn new(width: usize, height: usize) -> Canvas {
         let pixels = vec![Tuple::color(0.0, 0.0, 0.0); (width * height) as usize];
-        Canvas { width, height, pixels }
+        Canvas {
+            width,
+            height,
+            pixels,
+        }
     }
 
     pub fn pixels_mut(&mut self) -> &mut [Tuple] {
@@ -126,4 +130,3 @@ mod tests {
         assert_eq!(lines[17], "0 0 255");
     }
 }
-

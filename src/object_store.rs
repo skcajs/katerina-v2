@@ -1,16 +1,30 @@
-use std::{ops::{Deref, DerefMut}, sync::{Arc, Mutex, MutexGuard}};
+use std::{
+    ops::{Deref, DerefMut},
+    sync::{Arc, Mutex, MutexGuard},
+};
 
 use once_cell::sync::Lazy;
 use slotmap::SlotMap;
 
-use crate::{keys::ObjectKey, material::Material, matrix::Matrix, object::Object, shape::Shape, shapes::{cone::Cone, cube::Cube, cylinder::Cylinder, group::Group, plane::Plane, sphere::Sphere, test_shape::TestShape}};
+use crate::{
+    keys::ObjectKey,
+    material::Material,
+    matrix::Matrix,
+    object::Object,
+    shape::Shape,
+    shapes::{
+        cone::Cone, cube::Cube, cylinder::Cylinder, group::Group, plane::Plane, sphere::Sphere,
+        test_shape::TestShape,
+    },
+};
 
-struct ObjectGuard<'a> {
+pub struct ObjectGuard<'a> {
     guard: MutexGuard<'a, SlotMap<ObjectKey, Object>>,
     key: ObjectKey,
 }
 
-static OBJECT_STORE: Lazy<Arc<Mutex<ObjectStore>>> = Lazy::new(|| Arc::new(Mutex::new(ObjectStore::new())));
+static OBJECT_STORE: Lazy<Arc<Mutex<ObjectStore>>> =
+    Lazy::new(|| Arc::new(Mutex::new(ObjectStore::new())));
 
 impl<'a> Deref for ObjectGuard<'a> {
     type Target = Object;
@@ -37,14 +51,11 @@ impl ObjectStore {
         }
     }
 
-    fn new_object() -> Object {
-        Object {
-            key: None,
-            shape: Shape::TestShape(TestShape::new()),
-            transform: Matrix::identity(),
-            material: Material::new(),
-            parent: None,
-        }
+    pub fn add(&self, mut object: Object) -> ObjectKey {
+        self.objects.lock().unwrap().insert_with_key(|key| {
+            object.key = Some(key);
+            object
+        })
     }
 
     pub fn test_shape(&self) -> ObjectKey {
@@ -129,14 +140,4 @@ impl ObjectStore {
     pub fn get_object_store() -> std::sync::MutexGuard<'static, ObjectStore> {
         OBJECT_STORE.lock().unwrap()
     }
-
-    // pub fn get_object(key: ObjectKey) -> Option<ObjectGuard<'static>> {
-    //     let guard = OBJECT_STORE.lock().unwrap().objects;
-    //     if guard.lock().unwrap().contains_key(key) {
-    //         Some(ObjectGuard { guard: guard.lock().unwrap(), key })
-    //     } else {
-    //         None
-    //     }
-    // }
-
 }

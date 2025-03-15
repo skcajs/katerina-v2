@@ -1,5 +1,7 @@
-use crate::{intersection::Intersection, keys::ObjectKey, object::Object, object_store::ObjectStore, ray::Ray, tuple::Tuple};
-
+use crate::{
+    intersection::Intersection, keys::ObjectKey, object::Object, object_store::ObjectStore,
+    ray::Ray, tuple::Tuple,
+};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Cone {
@@ -19,7 +21,8 @@ impl Cone {
 
     pub fn local_intersect(&self, object_key: ObjectKey, ray: &Ray) -> Vec<Intersection> {
         let a = ray.direction.0.powi(2) - ray.direction.1.powi(2) + ray.direction.2.powi(2);
-        let b = 2.0 * ray.origin.0 * ray.direction.0 - 2.0 * ray.origin.1 * ray.direction.1 + 2.0 * ray.origin.2 * ray.direction.2;
+        let b = 2.0 * ray.origin.0 * ray.direction.0 - 2.0 * ray.origin.1 * ray.direction.1
+            + 2.0 * ray.origin.2 * ray.direction.2;
         let c = ray.origin.0.powi(2) - ray.origin.1.powi(2) + ray.origin.2.powi(2);
 
         let mut xs = vec![];
@@ -31,13 +34,13 @@ impl Cone {
             if disc < 0.0 {
                 return xs;
             }
-    
+
             let mut t0 = (-b - disc.sqrt()) / (2.0 * a);
             let mut t1 = (-b + disc.sqrt()) / (2.0 * a);
-    
+
             if t0 > t1 {
                 (t0, t1) = (t1, t0);
-            } 
+            }
 
             let y0 = ray.origin.1 + t0 * ray.direction.1;
             if self.minimum < y0 && y0 < self.maximum {
@@ -99,23 +102,30 @@ mod tests {
 
     #[test]
     fn intersecting_cone_with_ray() {
-        let object =  Object::test_shape();
+        let objects = ObjectStore::get_object_store();
+        let object = objects.test_shape();
         let cone = Cone::new();
         let r = Ray::new(Tuple::point(0.0, 0.0, -5.0), Tuple::vector(0.0, 0.0, 1.0));
-        let xs = cone.local_intersect(&object, &r);
+        let xs = cone.local_intersect(object, &r);
         assert_eq!(xs.len(), 2);
         assert_eq!(xs[0].t, 5.0);
         assert_eq!(xs[1].t, 5.0);
 
-        let r = Ray::new(Tuple::point(0.0, 0.0, -5.0), Tuple::vector(1.0, 1.0, 1.0).normalize());
-        let xs = cone.local_intersect(&object, &r);
+        let r = Ray::new(
+            Tuple::point(0.0, 0.0, -5.0),
+            Tuple::vector(1.0, 1.0, 1.0).normalize(),
+        );
+        let xs = cone.local_intersect(object, &r);
         assert_eq!(xs.len(), 2);
         let delta = 1e-4;
         assert!((xs[0].t - 8.66025).abs() < delta);
         assert!((xs[1].t - 8.66025).abs() < delta);
 
-        let r = Ray::new(Tuple::point(1.0, 1.0, -5.0), Tuple::vector(-0.5, -1.0, 1.0).normalize());
-        let xs = cone.local_intersect(&object, &r);
+        let r = Ray::new(
+            Tuple::point(1.0, 1.0, -5.0),
+            Tuple::vector(-0.5, -1.0, 1.0).normalize(),
+        );
+        let xs = cone.local_intersect(object, &r);
         assert_eq!(xs.len(), 2);
         let delta = 1e-4;
         assert!((xs[0].t - 4.55006).abs() < delta);
@@ -124,11 +134,14 @@ mod tests {
 
     #[test]
     fn intersecting_a_cone_with_a_ray_parallel_to_one_of_its_halves() {
-        let object =  Object::test_shape();
+        let object = ObjectStore::get_object_store().test_shape();
 
         let cone = Cone::new();
-        let r = Ray::new(Tuple::point(0.0, 0.0, -1.0), Tuple::vector(0.0, 1.0, 1.0).normalize());
-        let xs = cone.local_intersect(&object, &r);
+        let r = Ray::new(
+            Tuple::point(0.0, 0.0, -1.0),
+            Tuple::vector(0.0, 1.0, 1.0).normalize(),
+        );
+        let xs = cone.local_intersect(object, &r);
         assert_eq!(xs.len(), 1);
         let delta = 1e-4;
         assert!((xs[0].t - 0.35355).abs() < delta);
@@ -136,35 +149,47 @@ mod tests {
 
     #[test]
     fn intersecting_a_cone_end_caps() {
-        let object =  Object::test_shape();
+        let object = ObjectStore::get_object_store().test_shape();
         let cone = Cone {
             minimum: -0.5,
             maximum: 0.5,
             closed: true,
         };
-        let r = Ray::new(Tuple::point(0.0, 0.0, -5.0), Tuple::vector(0.0, 1.0, 0.0).normalize());
-        let xs = cone.local_intersect(&object, &r);
+        let r = Ray::new(
+            Tuple::point(0.0, 0.0, -5.0),
+            Tuple::vector(0.0, 1.0, 0.0).normalize(),
+        );
+        let xs = cone.local_intersect(object, &r);
         assert_eq!(xs.len(), 0);
 
-        let r = Ray::new(Tuple::point(0.0, 0.0, -0.25), Tuple::vector(0.0, 1.0, 1.0).normalize());
-        let xs = cone.local_intersect(&object, &r);
+        let r = Ray::new(
+            Tuple::point(0.0, 0.0, -0.25),
+            Tuple::vector(0.0, 1.0, 1.0).normalize(),
+        );
+        let xs = cone.local_intersect(object, &r);
         assert_eq!(xs.len(), 2);
 
-        let r = Ray::new(Tuple::point(0.0, 0.0, -0.25), Tuple::vector(0.0, 1.0, 0.0).normalize());
-        let xs = cone.local_intersect(&object, &r);
+        let r = Ray::new(
+            Tuple::point(0.0, 0.0, -0.25),
+            Tuple::vector(0.0, 1.0, 0.0).normalize(),
+        );
+        let xs = cone.local_intersect(object, &r);
         assert_eq!(xs.len(), 4);
     }
 
     #[test]
     fn computing_the_normal_vector_on_a_cone() {
-        let cone = Cone::new();
-        let n = cone.local_normal_at(&Tuple::point(0.0, 0.0, 0.0));
-        assert_eq!(n, Tuple::vector(0.0, 0.0, 0.0));
+        let objects = ObjectStore::get_object_store();
+        let cone_key = objects.cone();
+        if let Some(cone) = objects.get(cone_key) {
+            let n = cone.shape.local_normal_at(&Tuple::point(0.0, 0.0, 0.0));
+            assert_eq!(n, Tuple::vector(0.0, 0.0, 0.0));
 
-        let n = cone.local_normal_at(&Tuple::point(1.0, 1.0, 1.0));
-        assert_eq!(n, Tuple::vector(1.0, -2f64.sqrt(), 1.0));
+            let n = cone.shape.local_normal_at(&Tuple::point(1.0, 1.0, 1.0));
+            assert_eq!(n, Tuple::vector(1.0, -2f64.sqrt(), 1.0));
 
-        let n = cone.local_normal_at(&Tuple::point(-1.0, -1.0, 0.0));
-        assert_eq!(n, Tuple::vector(-1.0, 1.0, 0.0));
+            let n = cone.shape.local_normal_at(&Tuple::point(-1.0, -1.0, 0.0));
+            assert_eq!(n, Tuple::vector(-1.0, 1.0, 0.0));
+        }
     }
 }

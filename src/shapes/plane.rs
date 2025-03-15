@@ -27,7 +27,11 @@ mod tests {
 
     use super::*;
 
-    use crate::{object::Object, ray::Ray};
+    use crate::{
+        object::{self, Object},
+        object_store::ObjectStore,
+        ray::Ray,
+    };
 
     #[test]
     fn the_normal_of_a_plane_is_constant_everywhere() {
@@ -58,21 +62,25 @@ mod tests {
 
     #[test]
     fn a_ray_intersecting_a_plane_from_above() {
-        let p = Object::plane();
+        let objects = ObjectStore::get_object_store();
+        let p_key = objects.plane();
+        let p = objects.get(p_key).unwrap();
         let r = Ray::new(Tuple::point(0.0, 1.0, 0.0), Tuple::vector(0.0, -1.0, 0.0));
         let xs = p.intersect(&r);
         assert_eq!(xs.len(), 1);
         assert_eq!(xs[0].t, 1.0);
-        assert_eq!(xs[0].object, &p);
+        assert_eq!(xs[0].object_key, p_key);
     }
 
     #[test]
     fn a_ray_intersecting_a_plane_from_below() {
-        let p = Object::plane();
+        let objects = ObjectStore::get_object_store();
+        let p_key = objects.plane();
+        let p = objects.get(p_key).unwrap();
         let r = Ray::new(Tuple::point(0.0, -1.0, 0.0), Tuple::vector(0.0, 1.0, 0.0));
         let xs = p.intersect(&r);
         assert_eq!(xs.len(), 1);
         assert_eq!(xs[0].t, 1.0);
-        assert_eq!(xs[0].object, &p);
+        assert_eq!(xs[0].object_key, p_key);
     }
 }
