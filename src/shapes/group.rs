@@ -50,8 +50,7 @@ mod tests {
         let g_key = objects.group();
         let s_key = objects.test_shape();
         let mut g = objects.get(g_key).unwrap();
-        let mut s = objects.get(s_key).unwrap();
-        g.add_child(&mut s);
+        g.add_child(s_key);
         assert_eq!(g.get_children().len(), 1);
         assert_eq!(g.get_children()[0], s_key);
     }
@@ -72,16 +71,13 @@ mod tests {
         let g_key = objects.group();
         let mut g = objects.get(g_key).unwrap();
         let s1_key = objects.sphere();
-        let mut s1 = objects.get(s1_key).unwrap();
         let s2_key = objects.add(Object::sphere().with_transform(Matrix::translation(0., 0., -3.)));
-        let mut s2 = objects.get(s2_key).unwrap();
         let s3_key =
             objects.add(Object::sphere().with_transform(Matrix::translation(5.0, 0.0, 0.0)));
-        let mut s3 = objects.get(s3_key).unwrap();
 
-        g.add_child(&mut s1);
-        g.add_child(&mut s2);
-        g.add_child(&mut s3);
+        g.add_child(s1_key);
+        g.add_child(s2_key);
+        g.add_child(s3_key);
 
         let r = Ray::new(Tuple::point(0.0, 0.0, -5.0), Tuple::vector(0.0, 0.0, 1.0));
         let xs = g.intersect(&r);
@@ -99,9 +95,10 @@ mod tests {
         let mut g = objects.get(g_key).unwrap();
 
         g.set_transform(Matrix::scaling(2.0, 2.0, 2.0));
-        let mut s = Object::sphere().with_transform(Matrix::translation(5.0, 0.0, 0.0));
+        let s = Object::sphere().with_transform(Matrix::translation(5.0, 0.0, 0.0));
+        let s_key = objects.add(s);
 
-        g.add_child(&mut s);
+        g.add_child(s_key);
         let r = Ray::new(Tuple::point(10.0, 0.0, -10.0), Tuple::vector(0.0, 0.0, 1.0));
 
         let xs = g.intersect(&r);

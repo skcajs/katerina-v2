@@ -15,7 +15,7 @@ use crate::{
     shapes::{
         cone::Cone, cube::Cube, cylinder::Cylinder, group::Group, plane::Plane, sphere::Sphere,
         test_shape::TestShape,
-    },
+    }, tuple::Point,
 };
 
 pub struct ObjectGuard<'a> {
@@ -127,6 +127,77 @@ impl ObjectStore {
             parent: None,
         })
     }
+
+    pub fn set_transform(&mut self, key: ObjectKey, transform: Matrix) {
+        if let Some(mut object) = self.get(key) {
+            object.transform = transform;
+        }
+    }
+
+    pub fn set_material(&mut self, key: ObjectKey,  material: Material) {
+        if let Some(mut object) = self.get(key) {
+            object.material = material;
+        }
+    }
+
+    pub fn add_child(&mut self, parent_key: ObjectKey, child_key: ObjectKey) {
+
+        if let Some(mut parent) = self.get(parent_key) {
+            if let Shape::Group(ref mut group) = parent.shape {
+                group.children.push(child_key);
+            }
+        }
+
+        if let Some(mut child) = self.get(child_key) {
+            child.parent = Some(parent_key);
+        }
+    }
+
+    pub fn get_children(&self, key: ObjectKey) -> Vec<ObjectKey> {
+        if let Some(object) = self.get(key) {
+            if let Shape::Group(ref group) = object.shape {
+                group.children.clone()   
+            } else {
+                panic!("Object is not a group");
+            }
+        } else {
+            panic!("Object not found");
+        }
+    }
+
+    pub fn world_to_object(&self, key: ObjectKey, world_point: &Point) -> Point {
+        let (parent_key, transform) = {
+            if let Some(object) = self.get(key) {
+                (object.parent, object.transform.inverse())
+            } else {
+                return *world_point;
+            }
+        };
+    
+        if let Some(parent_key) = parent_key {
+            let point = self.world_to_object(parent_key, world_point);
+            transform * point
+        } else {
+            transform * *world_point
+        }
+    }
+
+    // pub fn normal_to_world(&self, object_normal: &Vector) -> Vector {
+    //     let objects = ObjectStore::get_object_store();
+    //     let mut world_normal = self.transform.inverse().transpose() * *object_normal;
+
+    //     world_normal.3 = 0.0;
+
+    //     world_normal = world_normal.normalize();
+
+    //     if let Some(parent_key) = self.parent {
+    //         if let Some(parent) = objects.get(parent_key) {
+    //             world_normal = parent.normal_to_world(&world_normal);
+    //         }
+    //     }
+
+    //     world_normal
+    // }
 
     pub fn get(&self, key: ObjectKey) -> Option<ObjectGuard> {
         let guard = self.objects.lock().unwrap();

@@ -145,12 +145,10 @@ impl Object {
         world_normal
     }
 
-    pub fn add_child(&mut self, child: &mut Object) {
+    pub fn add_child(&mut self, child_key: ObjectKey) {
         if let Shape::Group(ref mut group) = self.shape {
-            if let Some(ref mut key) = child.key {
-                child.parent = self.key;
-                group.children.push(*key);
-            }
+            group.children.push(child_key);
+            self.parent = Some(child_key);
         }
     }
 
@@ -283,27 +281,24 @@ mod tests {
 
     #[test]
     fn converting_a_point_from_world_to_object_space() {
-        let objects = ObjectStore::new();
-        let g1_key = objects.group();
+        let mut objects = ObjectStore::new();
 
-        if let Some(mut g1) = objects.get(g1_key) {
-            g1.set_transform(Matrix::rotation_y(std::f64::consts::PI / 2.0));
-            let g2_key = objects.group();
-            if let Some(mut g2) = objects.get(g2_key) {
-                g2.set_transform(Matrix::scaling(2.0, 2.0, 2.0));
-                g1.add_child(&mut g2);
-                let s_key = objects.sphere();
-                if let Some(mut s) = objects.get(s_key) {
-                    s.set_transform(Matrix::translation(5.0, 0.0, 0.0));
-                    g2.add_child(&mut s);
-                    let p = s.world_to_object(&Tuple::point(-2.0, 0.0, -10.0));
-                    let delta = 1e-5;
-                    assert!((p.0 - 0.0).abs() < delta);
-                    assert!((p.1 - 0.0).abs() < delta);
-                    assert!((p.2 + 1.0).abs() < delta);
-                }
-            }
-        }
+        let g1_key = objects.group();
+        let g2_key = objects.group();
+        let s_key = objects.sphere();
+
+        objects.set_transform(g1_key, Matrix::rotation_y(std::f64::consts::PI / 2.0));
+        objects.set_transform(g2_key, Matrix::scaling(2.0, 2.0, 2.0));
+        objects.add_child(g1_key, g2_key);
+        objects.set_transform(s_key, Matrix::translation(5.0, 0.0, 0.0));
+        objects.add_child(g2_key, s_key);
+
+        let p= objects.world_to_object(s_key, &Tuple::point(-2.0, 0.0, -10.0));
+
+        let delta = 1e-5;
+        assert!((p.0 - 0.0).abs() < delta);
+        assert!((p.1 - 0.0).abs() < delta);
+        assert!((p.2 + 1.0).abs() < delta);
     }
 
     #[test]
@@ -313,27 +308,41 @@ mod tests {
         let g2_key = objects.group();
         let s_key = objects.sphere();
 
-        let mut g1 = objects.get(g1_key).unwrap();
-        g1.set_transform(Matrix::rotation_y(std::f64::consts::PI / 2.0));
+        if let Some(mut g1) = objects.get(g1_key) {
+            g1.set_transform(Matrix::rotation_y(std::f64::consts::PI / 2.0));
+        }
 
-        let mut g2 = objects.get(g2_key).unwrap();
-        g2.set_transform(Matrix::scaling(1.0, 2.0, 3.0));
-        g1.add_child(&mut g2);
+        if let Some(mut g2) = objects.get(g2_key) {
+            g2.set_transform(Matrix::scaling(1.0, 2.0, 3.0));
+        }
 
-        let mut s = objects.get(s_key).unwrap();
-        s.set_transform(Matrix::translation(5.0, 0.0, 0.0));
-        g2.add_child(&mut s);
 
-        let n = s.normal_to_world(&Tuple::vector(
-            (3.0_f64).sqrt() / 3.0,
-            (3.0_f64).sqrt() / 3.0,
-            (3.0_f64).sqrt() / 3.0,
-        ));
+        if let Some(mut g1) = objects.get(g1_key) {
+            g1.add_child(g2_key);
+        }
 
-        let delta = 1e-4;
-        assert!((n.0 - 0.28571).abs() < delta);
-        assert!((n.1 - 0.42857).abs() < delta);
-        assert!((n.2 + 0.85714).abs() < delta);
+
+        if let Some(mut s) = objects.get(s_key) {
+            s.set_transform(Matrix::translation(5.0, 0.0, 0.0));
+        }
+
+        if let Some(mut g2) = objects.get(g2_key) {
+            g2.add_child(s_key);
+        }
+
+        if let Some(s) = objects.get(s_key) {
+            let n = s.normal_to_world(&Tuple::vector(
+                (3.0_f64).sqrt() / 3.0,
+                (3.0_f64).sqrt() / 3.0,
+                (3.0_f64).sqrt() / 3.0,
+            ));
+
+            let delta = 1e-4;
+            assert!((n.0 - 0.28571).abs() < delta);
+            assert!((n.1 - 0.42857).abs() < delta);
+            assert!((n.2 + 0.85714).abs() < delta);
+        }
+
     }
 
     // #[test]
