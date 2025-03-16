@@ -62,7 +62,7 @@ mod tests {
 
     #[test]
     fn a_ray_intersecting_a_plane_from_above() {
-        let objects = ObjectStore::get_object_store();
+        let mut objects = ObjectStore::get_object_store();
         let p_key = objects.plane();
         let p = objects.get(p_key).unwrap();
         let r = Ray::new(Tuple::point(0.0, 1.0, 0.0), Tuple::vector(0.0, -1.0, 0.0));
@@ -74,7 +74,7 @@ mod tests {
 
     #[test]
     fn a_ray_intersecting_a_plane_from_below() {
-        let objects = ObjectStore::get_object_store();
+        let mut objects = ObjectStore::get_object_store();
         let p_key = objects.plane();
         let p = objects.get(p_key).unwrap();
         let r = Ray::new(Tuple::point(0.0, -1.0, 0.0), Tuple::vector(0.0, 1.0, 0.0));

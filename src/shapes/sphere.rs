@@ -46,7 +46,7 @@ mod tests {
 
     #[test]
     fn a_ray_intersects_a_sphere_at_two_points() {
-        let objects = ObjectStore::get_object_store();
+        let mut objects = ObjectStore::get_object_store();
         let object_key = objects.test_shape();
         let r = Ray::new(Tuple::point(0.0, 0.0, -5.0), Tuple::vector(0.0, 0.0, 1.0));
         let s = Sphere::new();
@@ -58,7 +58,7 @@ mod tests {
 
     #[test]
     fn a_ray_misses_a_sphere() {
-        let objects = ObjectStore::get_object_store();
+        let mut objects = ObjectStore::get_object_store();
         let object_key = objects.test_shape();
         let r = Ray::new(Tuple::point(0.0, 0.0, -5.0), Tuple::vector(0.0, 1.0, 0.0));
         let s = Sphere::new();
@@ -68,7 +68,7 @@ mod tests {
 
     #[test]
     fn a_ray_originates_inside_a_sphere() {
-        let objects = ObjectStore::get_object_store();
+        let mut objects = ObjectStore::get_object_store();
         let object_key = objects.test_shape();
         let r = Ray::new(Tuple::point(0.0, 0.0, 0.0), Tuple::vector(0.0, 0.0, 1.0));
         let s = Sphere::new();
@@ -80,7 +80,7 @@ mod tests {
 
     #[test]
     fn a_sphere_is_behind_a_ray() {
-        let objects = ObjectStore::get_object_store();
+        let mut objects = ObjectStore::get_object_store();
         let object_key = objects.test_shape();
         let r: Ray = Ray::new(Tuple::point(0.0, 0.0, 5.0), Tuple::vector(0.0, 0.0, 1.0));
         let s = Sphere::new();

@@ -53,7 +53,7 @@ impl World {
     }
 
     pub fn default_world() -> World {
-        let store = ObjectStore::get_object_store();
+        let mut store = ObjectStore::get_object_store();
         let light = Light::new(
             Tuple::point(-10.0, 10.0, -10.0),
             Tuple::color(1.0, 1.0, 1.0),

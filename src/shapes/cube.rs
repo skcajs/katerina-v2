@@ -67,7 +67,7 @@ mod tests {
 
     #[test]
     fn a_ray_intersects_a_cube() {
-        let objects = ObjectStore::get_object_store();
+        let mut objects = ObjectStore::get_object_store();
         let object = objects.cube();
         let c = Cube::new();
         let r = Ray::new(Tuple::point(5.0, 0.5, 0.0), Tuple::vector(-1.0, 0.0, 0.0));
@@ -79,7 +79,7 @@ mod tests {
 
     #[test]
     fn a_ray_misses_a_cube() {
-        let objects = ObjectStore::get_object_store();
+        let mut objects = ObjectStore::get_object_store();
         let object = objects.cube();
         let c = Cube::new();
         let r = Ray::new(

@@ -102,7 +102,7 @@ mod tests {
 
     #[test]
     fn intersecting_cone_with_ray() {
-        let objects = ObjectStore::get_object_store();
+        let mut objects = ObjectStore::get_object_store();
         let object = objects.test_shape();
         let cone = Cone::new();
         let r = Ray::new(Tuple::point(0.0, 0.0, -5.0), Tuple::vector(0.0, 0.0, 1.0));
@@ -179,7 +179,7 @@ mod tests {
 
     #[test]
     fn computing_the_normal_vector_on_a_cone() {
-        let objects = ObjectStore::get_object_store();
+        let mut objects = ObjectStore::get_object_store();
         let cone_key = objects.cone();
         if let Some(cone) = objects.get(cone_key) {
             let n = cone.shape.local_normal_at(&Tuple::point(0.0, 0.0, 0.0));

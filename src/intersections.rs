@@ -28,7 +28,7 @@ mod tests {
 
     #[test]
     fn an_intersection_encapsulates_t_and_object() {
-        let objects = ObjectStore::get_object_store();
+        let mut objects = ObjectStore::get_object_store();
         let s_key = objects.sphere();
         let i = Intersection::new(3.5, s_key);
         assert_eq!(i.t, 3.5);
@@ -37,7 +37,7 @@ mod tests {
 
     #[test]
     fn aggregating_intersections() {
-        let objects = ObjectStore::get_object_store();
+        let mut objects = ObjectStore::get_object_store();
         let s_key = objects.sphere();
         let i1 = Intersection::new(1.0, s_key);
         let i2 = Intersection::new(2.0, s_key);
@@ -49,7 +49,7 @@ mod tests {
 
     #[test]
     fn hit_when_all_intersections_have_positive_t() {
-        let objects = ObjectStore::get_object_store();
+        let mut objects = ObjectStore::get_object_store();
         let s_key = objects.sphere();
         let i1 = Intersection::new(1.0, s_key);
         let i2 = Intersection::new(2.0, s_key);
@@ -60,7 +60,7 @@ mod tests {
 
     #[test]
     fn hit_when_some_intersections_have_negative_t() {
-        let objects = ObjectStore::get_object_store();
+        let mut objects = ObjectStore::get_object_store();
         let s_key = objects.sphere();
         let i1 = Intersection::new(-1.0, s_key);
         let i2 = Intersection::new(1.0, s_key);
@@ -71,7 +71,7 @@ mod tests {
 
     #[test]
     fn hit_when_all_intersections_have_negative_t() {
-        let objects = ObjectStore::get_object_store();
+        let mut objects = ObjectStore::get_object_store();
         let s_key = objects.sphere();
         let i1 = Intersection::new(-2.0, s_key);
         let i2 = Intersection::new(-1.0, s_key);
@@ -82,7 +82,7 @@ mod tests {
 
     #[test]
     fn hit_is_always_the_lowest_nonnegative_intersection() {
-        let objects = ObjectStore::get_object_store();
+        let mut objects = ObjectStore::get_object_store();
         let s_key = objects.sphere();
         let i1 = Intersection::new(5.0, s_key);
         let i2 = Intersection::new(7.0, s_key);
@@ -96,7 +96,7 @@ mod tests {
     #[test]
     fn precomputing_the_state_of_an_intersection() {
         let r = Ray::new(Tuple::point(0.0, 0.0, -5.0), Tuple::vector(0.0, 0.0, 1.0));
-        let objects = ObjectStore::get_object_store();
+        let mut objects = ObjectStore::get_object_store();
         let s_key = objects.sphere();
         let i = Intersection::new(4.0, s_key);
         let comps = i.prepare_computations(&r, &vec![]);
@@ -110,7 +110,7 @@ mod tests {
     #[test]
     fn the_hit_when_an_intersection_occurs_on_the_outside() {
         let r = Ray::new(Tuple::point(0.0, 0.0, -5.0), Tuple::vector(0.0, 0.0, 1.0));
-        let objects = ObjectStore::get_object_store();
+        let mut objects = ObjectStore::get_object_store();
         let s_key = objects.sphere();
         let i = Intersection::new(4.0, s_key);
         let comps = i.prepare_computations(&r, &vec![]);
@@ -120,7 +120,7 @@ mod tests {
     #[test]
     fn the_hit_when_an_intersection_occurs_on_the_inside() {
         let r = Ray::new(Tuple::point(0.0, 0.0, 0.0), Tuple::vector(0.0, 0.0, 1.0));
-        let objects = ObjectStore::get_object_store();
+        let mut objects = ObjectStore::get_object_store();
         let s_key = objects.sphere();
         let i = Intersection::new(1.0, s_key);
         let comps = i.prepare_computations(&r, &vec![]);
@@ -133,9 +133,9 @@ mod tests {
     #[test]
     fn the_hit_should_offset_the_point() {
         let r = Ray::new(Tuple::point(0.0, 0.0, -5.0), Tuple::vector(0.0, 0.0, 1.0));
-        let objects = ObjectStore::get_object_store();
+        let mut objects = ObjectStore::get_object_store();
         let s_key = objects.sphere();
-        let mut shape = objects.get(s_key).unwrap();
+        let shape = objects.get_mut(s_key).unwrap();
         shape.set_transform(Matrix::translation(0.0, 0.0, 1.0));
         let i = Intersection::new(5.0, s_key);
         let comps = i.prepare_computations(&r, &vec![]);
@@ -145,7 +145,7 @@ mod tests {
 
     #[test]
     fn precomputing_the_reflection_vector() {
-        let objects = ObjectStore::get_object_store();
+        let mut objects = ObjectStore::get_object_store();
         let s_key = objects.plane();
         let r = Ray::new(
             Tuple::point(0.0, 1.0, -1.0),
@@ -161,7 +161,7 @@ mod tests {
 
     #[test]
     fn finding_n1_and_n2_at_various_intersections() {
-        let objects = ObjectStore::get_object_store();
+        let mut objects = ObjectStore::get_object_store();
         let mut a = glass_sphere().with_transform(Matrix::scaling(2.0, 2.0, 2.0));
         a.set_material(a.get_material().clone().with_refractive_index(1.5));
         let a_key = objects.add(a);
@@ -211,7 +211,7 @@ mod tests {
 
     #[test]
     fn the_under_point_is_offset_below_the_surface() {
-        let objects = ObjectStore::get_object_store();
+        let mut objects = ObjectStore::get_object_store();
         let r = Ray::new(Tuple::point(0.0, 0.0, -5.0), Tuple::vector(0.0, 0.0, 1.0));
         let shape = glass_sphere().with_transform(Matrix::translation(0.0, 0.0, 1.0));
         let shape_key = objects.add(shape);
@@ -224,7 +224,7 @@ mod tests {
 
     #[test]
     fn the_schlick_approximation_under_total_internal_reflection() {
-        let objects = ObjectStore::get_object_store();
+        let mut objects = ObjectStore::get_object_store();
         let shape = glass_sphere();
         let shape_key = objects.add(shape);
         let r = Ray::new(
@@ -242,7 +242,7 @@ mod tests {
 
     #[test]
     fn the_schlick_approximation_with_a_perpendicular_viewing_angle() {
-        let objects = ObjectStore::get_object_store();
+        let mut objects = ObjectStore::get_object_store();
         let shape = glass_sphere();
         let shape_key = objects.add(shape);
         let r = Ray::new(Tuple::point(0.0, 0.0, 0.0), Tuple::vector(0.0, 1.0, 0.0));
@@ -258,7 +258,7 @@ mod tests {
 
     #[test]
     fn the_schlick_approximation_with_small_angle_and_n2_greater_than_n1() {
-        let objects = ObjectStore::get_object_store();
+        let mut objects = ObjectStore::get_object_store();
         let shape = glass_sphere();
         let shape_key = objects.add(shape);
         let r = Ray::new(Tuple::point(0.0, 0.99, -2.0), Tuple::vector(0.0, 0.0, 1.0));

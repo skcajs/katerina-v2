@@ -88,7 +88,7 @@ mod tests {
 
     #[test]
     fn a_ray_misses_a_cylinder() {
-        let objects = ObjectStore::get_object_store();
+        let mut objects = ObjectStore::get_object_store();
         let object = objects.cylinder();
         let c = Cylinder::new();
         let r = Ray::new(Tuple::point(1.0, 0.0, 0.0), Tuple::vector(0.0, 1.0, 0.0));
@@ -106,7 +106,7 @@ mod tests {
 
     #[test]
     fn a_ray_strikes_a_cylinder() {
-        let objects = ObjectStore::get_object_store();
+        let mut objects = ObjectStore::get_object_store();
         let object = objects.cylinder();
         let c = Cylinder::new();
         let r = Ray::new(Tuple::point(1.0, 0.0, -5.0), Tuple::vector(0.0, 0.0, 1.0));
@@ -133,7 +133,7 @@ mod tests {
 
     #[test]
     fn normal_vector_on_a_cylinder() {
-        let objects = ObjectStore::get_object_store();
+        let mut objects = ObjectStore::get_object_store();
         let c_key = objects.cylinder();
 
         if let Some(c) = objects.get(c_key) {
@@ -160,7 +160,7 @@ mod tests {
 
     #[test]
     fn intersecting_a_constrained_cylinder() {
-        let objects = ObjectStore::get_object_store();
+        let mut objects = ObjectStore::get_object_store();
         let object = objects.test_shape();
 
         let c_key = objects.add(Object::new(Shape::Cylinder(Cylinder {
@@ -207,7 +207,7 @@ mod tests {
 
     #[test]
     fn intersecting_the_caps_of_a_closed_cylinder() {
-        let objects = ObjectStore::get_object_store();
+        let mut objects = ObjectStore::get_object_store();
         let object = objects.test_shape();
 
         let c_key = objects.add(Object::new(Shape::Cylinder(Cylinder {
